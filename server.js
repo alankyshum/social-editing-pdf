@@ -34,7 +34,9 @@ var thumbnail = (() => {
 
   returnFx.cleanUp = (thumbnailPathList) => {
     thumbnailPathList.forEach((filename) => {
-      fs.unlink(filename);
+      if (filename != '.gitignore') {
+        fs.unlink(filename);
+      }
     })
   }
 
@@ -96,7 +98,17 @@ app.get('/file/:name', (req, res) => {
     res.sendFile(path.join(__dirname, 'LFS', 'thumbnails', req.params.name));
   }
 });
-
+app.get('/api/filelist', (req, res) => {
+  var fileList = db.object.fileList.filter((filename) => {
+    return filename != '.gitignore'
+  }).map((filename) => {
+    return {
+      filename: filename,
+      thumbnail: filename.match(/(.+).pdf$/i)[1]+".png"
+    }
+  })
+  res.send(fileList);
+})
 app.all('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 })
