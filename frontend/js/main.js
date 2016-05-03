@@ -4,8 +4,11 @@ GLOBAL VARIABLES
 var xhttp = new XMLHttpRequest();
 var domList = {
   file: {
-    container: document.getElementById('file-explorer'),
+    container: document.getElementById('file-container'),
     template: document.getElementById('file')
+  },
+  pdf: {
+    container: document.getElementById('pdf-viewer')
   }
 }
 
@@ -26,24 +29,32 @@ if (!window.requestAnimationFrame) {
 }
 
 // LOAD PDF
-var loadPDF = (file, page) => {
-  PDFJS.getDocument(file).then((pdf) => {
-    pdf.getPage(page).then((page) => {
-      var scale = 1;
-      var viewport = page.getViewport(scale);
+var renderPDF = (url, canvasContainer, options) => {
+  var options = options || { scale: 1 };
+  domList.pdf.container.innerHTML = "";
 
-      var canvas = document.getElementById('pdf-viewer-canvas');
-      var context = canvas.getContext('2d');
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
+  var renderPage = (page) => {
+    var viewport = page.getViewport(options.scale);
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    var renderContext = {
+      canvasContext: ctx,
+      viewport: viewport
+    };
 
-      var renderContext = {
-        canvasContext: context,
-        viewport: viewport
-      };
-      page.render(renderContext);
-    })
-  })
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+    canvasContainer.appendChild(canvas);
+
+    page.render(renderContext);
+  }
+
+  var renderPages = (pdfDoc) => {
+    for(var num = 1; num <= pdfDoc.numPages; num++)
+      pdfDoc.getPage(num).then(renderPage);
+  }
+  // PDFJS.disableWorker = true;
+  PDFJS.getDocument(url).then(renderPages);
 }
 
 // POPULATE FILE EXPLORER
@@ -52,15 +63,26 @@ var updateFileExplorer = () => {
   xhttp.onreadystatechange = () => {
     if (xhttp.readyState == 4 && xhttp.status == 200) {
       var fileList = JSON.parse(xhttp.responseText);
-      domList.file.container.innerHTML = "";
       fileList.forEach((file) => {
         var fileItem = domList.file.template.content.cloneNode(true);
         fileItem.querySelector('.filename').textContent = file.filename;
         fileItem.querySelector('img').src = "/file/"+file.thumbnail;
         domList.file.container.appendChild(fileItem);
+        domList.file.container.lastElementChild.dataset.file = file.filename;
       })
+      // load PDF
+      renderPDF("/file/"+fileList[0].filename, domList.pdf.container);
+      domList.file.container.children[0].classList.toggle('active');
     }
   }
   xhttp.send();
 }
 updateFileExplorer();
+
+
+// SELECT PDF FROM FILE EXPLORER
+var selectPDF = (e) => {
+  document.querySelector('#file-explorer .fileItem.active').classList.toggle('active');
+  e.classList.toggle('active');
+  renderPDF("file/"+e.dataset.file, domList.pdf.container);
+}

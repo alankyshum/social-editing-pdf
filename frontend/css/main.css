@@ -49,6 +49,14 @@
         margin-top: 5px;
         color: white;
         background-color: #3c98ca; }
+    #file-explorer .fileItem:hover {
+      cursor: pointer;
+      margin-left: 20px;
+      transition: margin-left .3s; }
+    #file-explorer .fileItem:hover img, #file-explorer .fileItem.active img {
+      border-color: #1C598E; }
+    #file-explorer .fileItem:hover .fileinfo .filename, #file-explorer .fileItem.active .fileinfo .filename {
+      background-color: #1C598E; }
 
 #thumbnails {
   width: 20vw;

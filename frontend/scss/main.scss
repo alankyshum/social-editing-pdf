@@ -4,6 +4,7 @@
  * ----------------
  */
 $themeColour: #3c98ca;
+$darkBlue: #1C598E;
 $medGrey: #545454;
 
 /**
@@ -64,6 +65,20 @@ $fileItemMargin: 5px;
         margin-top: $fileItemMargin;
         color: white;
         background-color: $themeColour;
+      }
+    }
+
+    &:hover {
+      cursor: pointer;
+      margin-left: 20px;
+      transition: margin-left .3s;
+    }
+    &:hover, &.active {
+      img {
+        border-color: $darkBlue;
+      }
+      .fileinfo .filename {
+        background-color: $darkBlue;
       }
     }
   }

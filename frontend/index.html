@@ -5,10 +5,13 @@
     <title>Experimental Social Collaborative PDF</title>
     <link rel="stylesheet" href="css/main.css">
   </head>
-  <body onload='loadPDF("file/demo.pdf", 1);'>
+  <body>
     <div id="container">
-      <div id="file-explorer">
+      <div id='file-explorer'>
+        <h2 class='file-header'>All Files</h2>
+        <div id="file-container">
 
+        </div>
       </div>
       <div id="thumbnails">
 
@@ -20,7 +23,7 @@
 
     <!-- TEMPLATES -->
     <template id="file">
-      <div class="fileItem">
+      <div class="fileItem" data-file onclick='selectPDF(this);'>
         <img src="" alt="" />
         <div class="fileinfo">
           <h2 class='filename'></h2>
