@@ -18,17 +18,27 @@
   flex-direction: row;
   justify-content: center; }
   #container > div {
-    height: 100vh;
-    overflow: auto; }
+    height: 100vh; }
+  #container #file-container, #container #pdf-container {
+    overflow: auto;
+    height: calc(100vh - 40px); }
 
-#file-explorer {
+.file-header {
+  height: 40px;
+  padding: 7px 0 0 12px;
+  box-sizing: border-box;
+  background-color: #3c98ca;
+  color: white;
+  border-bottom: 2px solid #0c222e; }
+
+#file-container {
   width: 20vw;
   min-width: 210px; }
-  #file-explorer .fileItem {
+  #file-container .fileItem {
     display: flex;
     flex-wrap: wrap;
     margin-bottom: 5px; }
-    #file-explorer .fileItem img {
+    #file-container .fileItem img {
       width: 60%;
       height: 100%;
       min-width: 50px;
@@ -36,11 +46,11 @@
       margin: 5px auto 0 auto;
       border: 2px solid #3c98ca;
       box-sizing: border-box; }
-    #file-explorer .fileItem .fileinfo {
+    #file-container .fileItem .fileinfo {
       width: 40%;
       min-width: 80px;
       flex-grow: 1; }
-      #file-explorer .fileItem .fileinfo .filename {
+      #file-container .fileItem .fileinfo .filename {
         white-space: normal;
         word-wrap: break-word;
         word-break: break-word;
@@ -49,13 +59,13 @@
         margin-top: 5px;
         color: white;
         background-color: #3c98ca; }
-    #file-explorer .fileItem:hover {
+    #file-container .fileItem:hover {
       cursor: pointer;
       margin-left: 20px;
       transition: margin-left .3s; }
-    #file-explorer .fileItem:hover img, #file-explorer .fileItem.active img {
+    #file-container .fileItem:hover img, #file-container .fileItem.active img {
       border-color: #1C598E; }
-    #file-explorer .fileItem:hover .fileinfo .filename, #file-explorer .fileItem.active .fileinfo .filename {
+    #file-container .fileItem:hover .fileinfo .filename, #file-container .fileItem.active .fileinfo .filename {
       background-color: #1C598E; }
 
 #thumbnails {

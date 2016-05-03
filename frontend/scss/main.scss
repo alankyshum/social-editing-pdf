@@ -7,6 +7,8 @@ $themeColour: #3c98ca;
 $darkBlue: #1C598E;
 $medGrey: #545454;
 
+$navbarHeight: 40px;
+
 /**
  * --------------
  * STYLES -------
@@ -29,14 +31,29 @@ $medGrey: #545454;
   justify-content: center;
   > div {
     height: 100vh;
+  }
+  #file-container, #pdf-container {
     overflow: auto;
+    height: calc(100vh - #{$navbarHeight});
   }
 }
 
-// MODULES
 // --------------
+// MODULES ------
+// --------------
+// GLOBAL ITEMS
+.file-header {
+  height: $navbarHeight;
+  padding: 7px 0 0 12px;
+  box-sizing: border-box;
+  background-color: $themeColour;
+  color: white;
+  border-bottom: 2px solid darken($themeColour, 40%);
+}
+
+// MODULE:: FILE EXPLORER
 $fileItemMargin: 5px;
-#file-explorer {
+#file-container {
   width: 20vw;
   min-width: 210px;
   .fileItem {
@@ -83,10 +100,14 @@ $fileItemMargin: 5px;
     }
   }
 }
+
+// MODULE:: PDF THUMBNAIL EXPLORER
 #thumbnails {
   width: 20vw;
   flex-grow: 1;
 }
+
+// MODULE:: PDF VIEWER
 #pdf-viewer {
   width: 60vw;
   flex-grow: 0;

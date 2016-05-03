@@ -8,7 +8,8 @@ var domList = {
     template: document.getElementById('file')
   },
   pdf: {
-    container: document.getElementById('pdf-viewer')
+    container: document.getElementById('pdf-container'),
+    title: document.querySelector('#pdf-viewer .file-header')
   }
 }
 
@@ -71,8 +72,7 @@ var updateFileExplorer = () => {
         domList.file.container.lastElementChild.dataset.file = file.filename;
       })
       // load PDF
-      renderPDF("/file/"+fileList[0].filename, domList.pdf.container);
-      domList.file.container.children[0].classList.toggle('active');
+      selectPDF(domList.file.container.children[0]);
     }
   }
   xhttp.send();
@@ -82,7 +82,10 @@ updateFileExplorer();
 
 // SELECT PDF FROM FILE EXPLORER
 var selectPDF = (e) => {
-  document.querySelector('#file-explorer .fileItem.active').classList.toggle('active');
+  var _activeItems = document.querySelector('#file-explorer .fileItem.active');
+  _activeItems && _activeItems.classList.toggle('active');
   e.classList.toggle('active');
+  domList.pdf.title.textContent = e.dataset.file;
+
   renderPDF("file/"+e.dataset.file, domList.pdf.container);
 }
