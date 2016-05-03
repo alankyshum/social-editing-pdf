@@ -12,5 +12,52 @@
     "17_Social_Computing.pdf",
     "18_Crowd_Computing.pdf",
     "demo.pdf"
+  ],
+  "users": [
+    {
+      "username": "alan13",
+      "role": "student",
+      "bookmark": {
+        "04_Humanability.pdf": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "username": "alan14",
+      "role": "student",
+      "bookmark": {
+        "04_Humanability.pdf": [
+          8,
+          9
+        ]
+      }
+    },
+    {
+      "username": "alan",
+      "role": "student",
+      "bookmark": {
+        "04_Humanability.pdf": [
+          3
+        ],
+        "08_Auditory_Haptic_Interaction.pdf": [
+          2
+        ]
+      }
+    },
+    {
+      "username": "xm",
+      "role": "prof",
+      "bookmark": {
+        "08_Auditory_Haptic_Interaction.pdf": [
+          2
+        ],
+        "04_Humanability.pdf": [
+          1
+        ]
+      }
+    }
   ]
 }

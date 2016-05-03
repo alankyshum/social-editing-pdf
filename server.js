@@ -93,6 +93,7 @@ var app = express();
 app.use(bodyParser.json());
 app.use(express.static( path.join(__dirname, 'frontend')) );
 
+// GET APIS
 app.get('/file/:name', (req, res) => {
   if (req.params.name.match(/.pdf$/i)) {
     res.sendFile(path.join(__dirname, 'LFS', 'files', req.params.name));
@@ -111,6 +112,8 @@ app.get('/api/filelist', (req, res) => {
   })
   res.send(fileList);
 });
+
+// POST APIS
 app.post('/api/bookmark', (req, res) => {
   var bookmarkInfo = {
     username: req.body.username,
@@ -127,7 +130,7 @@ app.post('/api/bookmark', (req, res) => {
     username: bookmarkInfo.username
   });
   if (_existingUser) {
-    console.log(_existingUser.bookmark);
+    if (!_existingUser.bookmark[bookmarkInfo.pdf]) _existingUser.bookmark[bookmarkInfo.pdf] = [];
     _existingUser.bookmark[bookmarkInfo.pdf].push(bookmarkInfo.pageNumber);
     db.write();
   } else {
@@ -140,7 +143,21 @@ app.post('/api/bookmark', (req, res) => {
     })
   }
   res.sendStatus(200);
-})
+});
+app.post('/api/allbookmarks', (req, res) => {
+  var filename = req.body.filename;
+  var bookmarkCnt = {};
+  db.object.users.forEach((user) => {
+    user.bookmark[filename] && user.bookmark[filename].forEach((pageNum) => {
+      if (!bookmarkCnt[user.role]) bookmarkCnt[user.role] = {};
+      if (!bookmarkCnt[user.role][pageNum]) bookmarkCnt[user.role][pageNum] = 0;
+      bookmarkCnt[user.role][pageNum]++;
+    })
+  })
+
+  res.send(bookmarkCnt);
+});
+
 
 app.all('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'index.html'));

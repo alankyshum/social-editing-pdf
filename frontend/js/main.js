@@ -89,19 +89,31 @@ var renderPDF = (url, canvasContainer, options) => {
 
     canvas.height = viewport.height;
     canvas.width = viewport.width;
+
     if (options.isThumbnail) {
+      // thumbnail - related
       canvas.onclick = () => {
         domList.pdf.container.children[page.pageIndex].scrollIntoView()
       }
-    }
-    canvasWrapper.appendChild(canvas);
-    if (!options.isThumbnail) {
+      canvasWrapper.appendChild(canvas);
+
+      var bookmarkCnt = document.createElement('div');
+      var studentCnt = bookmarkInfo.db.bookmarkedPages.student?bookmarkInfo.db.bookmarkedPages.student[page.pageIndex+1]:null
+        , profCnt = bookmarkInfo.db.bookmarkedPages.prof?bookmarkInfo.db.bookmarkedPages.prof[page.pageIndex+1]:null;
+      if (profCnt) bookmarkCnt.dataset.profCnt = profCnt;
+      if (studentCnt) bookmarkCnt.dataset.studentCnt = studentCnt;
+      bookmarkCnt.classList.add('bookmark-count');
+      canvasWrapper.appendChild(bookmarkCnt);
+    } else {
+      // real pdf viewer
+      canvasWrapper.appendChild(canvas);
       var bookmarkBtn = domList.bookmarkBtn.template.content.cloneNode(true);
       canvasWrapper.appendChild(bookmarkBtn);
       canvasWrapper.lastElementChild.onclick = () => {
         bookmarkThisPage(page.pageIndex+1);
       }
     }
+
     canvasContainer.appendChild(canvasWrapper);
 
     page.render(renderContext);
@@ -109,9 +121,7 @@ var renderPDF = (url, canvasContainer, options) => {
 
   var renderPages = (pdfDoc) => {
     for(var num = 1; num <= pdfDoc.numPages; num++)
-      pdfDoc.getPage(num).then((page) => {
-        renderPage(page);
-      });
+      pdfDoc.getPage(num).then(renderPage);
   }
   // PDFJS.disableWorker = true;
   PDFJS.getDocument(url).then(renderPages);
@@ -144,14 +154,14 @@ var selectPDF = (e) => {
   var _activeItems = document.querySelector('#file-explorer .fileItem.active');
   _activeItems && _activeItems.classList.toggle('active');
   e.classList.toggle('active');
+  bookmarkInfo.user.currentPDF = e.dataset.file;
   domList.pdf.title.textContent = e.dataset.file;
 
-  renderPDF("file/"+e.dataset.file, domList.pdf.container, {scale: 1, isThumbnail: false});
-  renderPDF("file/"+e.dataset.file, domList.thumbnail.container, {scale: config.thumbnail.scale, isThumbnail: true});
-
-  domList.pdf.container.onscroll = (evt) => {
-    domList.thumbnail.container.scrollTop = evt.srcElement.scrollTop*config.thumbnail.scale;
-  }
+  getBookmarkedList().then((bookmarkList) => {
+    bookmarkInfo.db.bookmarkedPages = bookmarkList;
+    renderPDF("file/"+e.dataset.file, domList.pdf.container, {scale: 1, isThumbnail: false});
+    renderPDF("file/"+e.dataset.file, domList.thumbnail.container, {scale: config.thumbnail.scale, isThumbnail: true});
+  })
 }
 
 
@@ -188,4 +198,36 @@ var bookmarkThisPage = (pageIndex) => {
     pdf: domList.pdf.title.textContent,
     pageNumber: pageIndex
   }));
+}
+
+var getBookmarkedList = (user, filename) => {
+  filename = filename?filename:bookmarkInfo.user.currentPDF;
+  if (user) {
+    // get bookmark list from a user
+
+  } else {
+    // get bookmark list from all users
+    return new Promise((resolve, reject) => {
+      xhttp.open('post', '/api/allbookmarks', true);
+      xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      xhttp.onreadystatechange = () => {
+        if (xhttp.readyState == 4 && xhttp.status == 200) {
+          resolve(JSON.parse(xhttp.responseText));
+        }
+      }
+      xhttp.send(JSON.stringify({
+        filename: filename
+      }));
+    })
+  }
+}
+
+
+/**
+ * -------------------
+ * LISTENER ----------
+ * -------------------
+ */
+domList.pdf.container.onscroll = (evt) => {
+  domList.thumbnail.container.scrollTop = evt.srcElement.scrollTop*config.thumbnail.scale;
 }

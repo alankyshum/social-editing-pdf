@@ -52,6 +52,9 @@ $navbarHeight: 40px;
   color: white;
   border-bottom: 2px solid darken($themeColour, 40%);
 }
+.canvasWrapper {
+  position: relative;
+}
 
 // MODULE:: FILE EXPLORER
 $fileItemMargin: 5px;
@@ -108,8 +111,31 @@ $fileItemMargin: 5px;
 #thumbnails {
   width: 20vw;
   max-width: 210px;
+  .bookmark-count {
+    position: absolute;
+    top: 0;
+    right: 0;
+    &[data-prof-cnt]:before, &[data-student-cnt]:after {
+      position: absolute;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      color: white;
+      text-align: center;
+      padding-top: 3px;
+      box-sizing: border-box;
+      right: 10px;
+    }
+    &[data-prof-cnt]:before {
+      content: attr(data-prof-cnt);
+      background-color: #E6B810;
+    }
+    &[data-student-cnt]:after {
+      content: attr(data-student-cnt);
+      background-color: #AD1313;
+    }
+  }
 }
-
 // MODULE:: PDF VIEWER
 #pdf-viewer {
   width: 60vw;
