@@ -7,6 +7,7 @@ $themeColour: #3c98ca;
 $darkBlue: #1C598E;
 $green: #3F7909;
 $medGrey: #545454;
+$darkRed: #b70000;
 
 $navbarHeight: 40px;
 
@@ -54,9 +55,10 @@ $navbarHeight: 40px;
 
 // MODULE:: FILE EXPLORER
 $fileItemMargin: 5px;
-#file-container {
+#file-explorer {
   width: 20vw;
   min-width: 210px;
+  max-width: 300px;
   .fileItem {
     display: flex;
     flex-wrap: wrap;
@@ -105,13 +107,50 @@ $fileItemMargin: 5px;
 // MODULE:: PDF THUMBNAIL EXPLORER
 #thumbnails {
   width: 20vw;
-  flex-grow: 1;
+  max-width: 210px;
 }
 
 // MODULE:: PDF VIEWER
 #pdf-viewer {
   width: 60vw;
-  flex-grow: 0;
+  flex-grow: 1;
+  .canvasWrapper {
+    position: relative;
+    .bookmarkBtn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: white;
+      font-size: 35px;
+      opacity: .3;
+      transition: opacity .3s;
+      &:hover {
+        opacity: 1;
+        cursor: pointer;
+        animation: bouncing .5s infinite alternate;
+      }
+      .fa {
+        color: #545454;
+        text-shadow: 0px 0px 5px white, 0px 0px 10px white;
+      }
+    }
+    canvas:hover + .bookmarkBtn {
+      opacity: .8;
+    }
+    &.active .bookmarkBtn, .bookmarkBtn:hover {
+      .fa {
+        color: $darkRed;
+      }
+    }
+  }
+}
+@keyframes bouncing {
+  0% {
+    top: 25px;
+  }
+  100% {
+    top: 15px;
+  }
 }
 
 

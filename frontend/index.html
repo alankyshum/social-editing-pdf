@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8">
     <title>Experimental Social Collaborative PDF</title>
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/main.css" charset="utf-8">
+    <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css" charset="utf-8">
   </head>
   <body>
     <div id="container">
@@ -37,12 +38,18 @@
     <div id="msg"></div>
 
     <!-- TEMPLATES -->
-    <template id="file">
+    <template id="file-template">
       <div class="fileItem" data-file onclick='selectPDF(this);'>
         <img src="" alt="" />
         <div class="fileinfo">
           <h2 class='filename'></h2>
         </div>
+      </div>
+    </template>
+    <template id="bookmarkBtn-template">
+      <!-- ONLY ONE IN HTML -->
+      <div class="bookmarkBtn">
+        <i class="fa fa-bookmark"></i>
       </div>
     </template>
 

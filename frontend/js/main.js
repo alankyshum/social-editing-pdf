@@ -5,7 +5,7 @@ var xhttp = new XMLHttpRequest();
 var domList = {
   file: {
     container: document.getElementById('file-container'),
-    template: document.getElementById('file')
+    template: document.getElementById('file-template')
   },
   thumbnail: {
     container: document.getElementById('thumbnails-container'),
@@ -20,6 +20,9 @@ var domList = {
   },
   msgBox: {
     container: document.getElementById('msg')
+  },
+  bookmarkBtn: {
+    template: document.getElementById('bookmarkBtn-template')
   }
 }
 var config = {
@@ -78,6 +81,8 @@ var renderPDF = (url, canvasContainer, options) => {
       canvasContext: ctx,
       viewport: viewport
     };
+    var canvasWrapper = document.createElement('div');
+    canvasWrapper.classList.add('canvasWrapper');
 
     canvas.height = viewport.height;
     canvas.width = viewport.width;
@@ -86,13 +91,20 @@ var renderPDF = (url, canvasContainer, options) => {
         domList.pdf.container.children[page.pageIndex].scrollIntoView()
       }
     }
-    canvasContainer.appendChild(canvas);
+    canvasWrapper.appendChild(canvas);
+    if (!options.isThumbnail) {
+      var bookmarkBtn = domList.bookmarkBtn.template.content.cloneNode(true);
+      canvasWrapper.appendChild(bookmarkBtn);
+      canvasWrapper.lastElementChild.onclick = () => {
+        bookmarkThisPage(page.pageIndex+1);
+      }
+    }
+    canvasContainer.appendChild(canvasWrapper);
 
     page.render(renderContext);
   }
 
   var renderPages = (pdfDoc) => {
-    console.log(pdfDoc);
     for(var num = 1; num <= pdfDoc.numPages; num++)
       pdfDoc.getPage(num).then((page) => {
         renderPage(page);
@@ -131,7 +143,7 @@ var selectPDF = (e) => {
   e.classList.toggle('active');
   domList.pdf.title.textContent = e.dataset.file;
 
-  renderPDF("file/"+e.dataset.file, domList.pdf.container, {scale: 1});
+  renderPDF("file/"+e.dataset.file, domList.pdf.container, {scale: 1, isThumbnail: false});
   renderPDF("file/"+e.dataset.file, domList.thumbnail.container, {scale: config.thumbnail.scale, isThumbnail: true});
 
   domList.pdf.container.onscroll = (evt) => {
@@ -149,4 +161,8 @@ var setUser = () => {
     role: role
   };
   showMsg(`Current User: ${username} set`)
+}
+var bookmarkThisPage = (pageIndex) => {
+  console.log(pageIndex);
+  showMsg(`Page ${pageIndex} bookmarked :)`)
 }

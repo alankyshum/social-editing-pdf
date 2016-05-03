@@ -14,9 +14,15 @@
   margin: 0; }
 
 #container {
+  display: -webkit-flex;
+  display: -ms-flexbox;
   display: flex;
-  flex-direction: row;
-  justify-content: center; }
+  -webkit-flex-direction: row;
+      -ms-flex-direction: row;
+          flex-direction: row;
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center; }
   #container > div {
     height: 100vh; }
   #container #file-container, #container #pdf-container, #container #thumbnails-container {
@@ -31,14 +37,19 @@
   color: white;
   border-bottom: 2px solid #0c222e; }
 
-#file-container {
+#file-explorer {
   width: 20vw;
-  min-width: 210px; }
-  #file-container .fileItem {
+  min-width: 210px;
+  max-width: 300px; }
+  #file-explorer .fileItem {
+    display: -webkit-flex;
+    display: -ms-flexbox;
     display: flex;
-    flex-wrap: wrap;
+    -webkit-flex-wrap: wrap;
+        -ms-flex-wrap: wrap;
+            flex-wrap: wrap;
     margin-bottom: 5px; }
-    #file-container .fileItem img {
+    #file-explorer .fileItem img {
       width: 60%;
       height: 100%;
       min-width: 50px;
@@ -46,11 +57,13 @@
       margin: 5px auto 0 auto;
       border: 2px solid #3c98ca;
       box-sizing: border-box; }
-    #file-container .fileItem .fileinfo {
+    #file-explorer .fileItem .fileinfo {
       width: 40%;
       min-width: 80px;
-      flex-grow: 1; }
-      #file-container .fileItem .fileinfo .filename {
+      -webkit-flex-grow: 1;
+          -ms-flex-positive: 1;
+              flex-grow: 1; }
+      #file-explorer .fileItem .fileinfo .filename {
         white-space: normal;
         word-wrap: break-word;
         word-break: break-word;
@@ -59,22 +72,58 @@
         margin-top: 5px;
         color: white;
         background-color: #3c98ca; }
-    #file-container .fileItem:hover {
+    #file-explorer .fileItem:hover {
       cursor: pointer;
       margin-left: 20px;
       transition: margin-left .3s; }
-    #file-container .fileItem:hover img, #file-container .fileItem.active img {
+    #file-explorer .fileItem:hover img, #file-explorer .fileItem.active img {
       border-color: #1C598E; }
-    #file-container .fileItem:hover .fileinfo .filename, #file-container .fileItem.active .fileinfo .filename {
+    #file-explorer .fileItem:hover .fileinfo .filename, #file-explorer .fileItem.active .fileinfo .filename {
       background-color: #1C598E; }
 
 #thumbnails {
   width: 20vw;
-  flex-grow: 1; }
+  max-width: 210px; }
 
 #pdf-viewer {
   width: 60vw;
-  flex-grow: 0; }
+  -webkit-flex-grow: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1; }
+  #pdf-viewer .canvasWrapper {
+    position: relative; }
+    #pdf-viewer .canvasWrapper .bookmarkBtn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: white;
+      font-size: 35px;
+      opacity: .3;
+      transition: opacity .3s; }
+      #pdf-viewer .canvasWrapper .bookmarkBtn:hover {
+        opacity: 1;
+        cursor: pointer;
+        -webkit-animation: bouncing .5s infinite alternate;
+                animation: bouncing .5s infinite alternate; }
+      #pdf-viewer .canvasWrapper .bookmarkBtn .fa {
+        color: #545454;
+        text-shadow: 0px 0px 5px white, 0px 0px 10px white; }
+    #pdf-viewer .canvasWrapper canvas:hover + .bookmarkBtn {
+      opacity: .8; }
+    #pdf-viewer .canvasWrapper.active .bookmarkBtn .fa, #pdf-viewer .canvasWrapper .bookmarkBtn:hover .fa {
+      color: #b70000; }
+
+@-webkit-keyframes bouncing {
+  0% {
+    top: 25px; }
+  100% {
+    top: 15px; } }
+
+@keyframes bouncing {
+  0% {
+    top: 25px; }
+  100% {
+    top: 15px; } }
 
 #demoPanel {
   position: fixed;
@@ -113,8 +162,24 @@
   position: fixed;
   right: 15px; }
   #msg.fadeIn {
-    animation: fadeIn 5s;
-    animation-fill-mode: forwards; }
+    -webkit-animation: fadeIn 5s;
+            animation: fadeIn 5s;
+    -webkit-animation-fill-mode: forwards;
+            animation-fill-mode: forwards; }
+
+@-webkit-keyframes fadeIn {
+  0% {
+    bottom: -30px;
+    opacity: 0; }
+  30% {
+    bottom: 90px;
+    opacity: .8; }
+  70% {
+    bottom: 90px;
+    opacity: .8; }
+  100% {
+    bottom: -30px;
+    opacity: 0; } }
 
 @keyframes fadeIn {
   0% {
