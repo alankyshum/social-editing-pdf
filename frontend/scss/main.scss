@@ -1,0 +1,78 @@
+/**
+ * ----------------
+ * VARIABLES
+ * ----------------
+ */
+$themeColour: #3c98ca;
+$medGrey: #545454;
+
+/**
+ * --------------
+ * STYLES -------
+ * --------------
+ */
+// GLOBAL
+// -------------
+* {
+  font-family: "Helvetica CE 35", "Segoe UI Light", "Arial Nova Thin", "Century Gothic Thin", Sans-serif;
+  color: $medGrey;
+  margin: 0;
+}
+
+
+// CONTAINER
+// --------------
+#container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  > div {
+    height: 100vh;
+    overflow: auto;
+  }
+}
+
+// MODULES
+// --------------
+$fileItemMargin: 5px;
+#file-explorer {
+  width: 20vw;
+  min-width: 210px;
+  .fileItem {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: $fileItemMargin;
+    img {
+      width: 60%;
+      height: 100%;
+      min-width: 50px;
+      max-width: 150px;
+      margin: 5px auto 0 auto;
+      border: 2px solid $themeColour;
+      box-sizing: border-box;
+    }
+    .fileinfo {
+      width: 40%;
+      min-width: 80px;
+      flex-grow: 1;
+      .filename {
+        white-space: normal;
+        word-wrap: break-word;
+        word-break: break-word;
+        font-size: 18px;
+        padding: 0 5px;
+        margin-top: $fileItemMargin;
+        color: white;
+        background-color: $themeColour;
+      }
+    }
+  }
+}
+#thumbnails {
+  width: 20vw;
+  flex-grow: 1;
+}
+#pdf-viewer {
+  width: 60vw;
+  flex-grow: 0;
+}

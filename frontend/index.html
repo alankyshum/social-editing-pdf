@@ -3,8 +3,34 @@
   <head>
     <meta charset="utf-8">
     <title>Experimental Social Collaborative PDF</title>
+    <link rel="stylesheet" href="css/main.css">
   </head>
-  <body>
-    <h1>TESTING</h1>
+  <body onload='loadPDF("file/demo.pdf", 1);'>
+    <div id="container">
+      <div id="file-explorer">
+
+      </div>
+      <div id="thumbnails">
+
+      </div>
+      <div id="pdf-viewer">
+        <canvas id="pdf-viewer-canvas"></canvas>
+      </div>
+    </div>
+
+    <!-- TEMPLATES -->
+    <template id="file">
+      <div class="fileItem">
+        <img src="" alt="" />
+        <div class="fileinfo">
+          <h2 class='filename'></h2>
+        </div>
+      </div>
+    </template>
+
+    <!-- SCRIPTS HERE -->
+    <script src="bower_components/pdfjs-dist/build/pdf.js" charset="utf-8"></script>
+    <script src="bower_components/pdfjs-dist/build/pdf.worker.js" charset="utf-8"></script>
+    <script src="js/main.js" charset="utf-8"></script>
   </body>
 </html>

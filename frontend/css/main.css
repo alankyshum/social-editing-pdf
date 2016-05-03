@@ -1,0 +1,59 @@
+/**
+ * ----------------
+ * VARIABLES
+ * ----------------
+ */
+/**
+ * --------------
+ * STYLES -------
+ * --------------
+ */
+* {
+  font-family: "Helvetica CE 35", "Segoe UI Light", "Arial Nova Thin", "Century Gothic Thin", Sans-serif;
+  color: #545454;
+  margin: 0; }
+
+#container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center; }
+  #container > div {
+    height: 100vh;
+    overflow: auto; }
+
+#file-explorer {
+  width: 20vw;
+  min-width: 210px; }
+  #file-explorer .fileItem {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 5px; }
+    #file-explorer .fileItem img {
+      width: 60%;
+      height: 100%;
+      min-width: 50px;
+      max-width: 150px;
+      margin: 5px auto 0 auto;
+      border: 2px solid #3c98ca;
+      box-sizing: border-box; }
+    #file-explorer .fileItem .fileinfo {
+      width: 40%;
+      min-width: 80px;
+      flex-grow: 1; }
+      #file-explorer .fileItem .fileinfo .filename {
+        white-space: normal;
+        word-wrap: break-word;
+        word-break: break-word;
+        font-size: 18px;
+        padding: 0 5px;
+        margin-top: 5px;
+        color: white;
+        background-color: #3c98ca; }
+
+#thumbnails {
+  width: 20vw;
+  flex-grow: 1; }
+
+#pdf-viewer {
+  width: 60vw;
+  flex-grow: 0; }

@@ -1,0 +1,24 @@
+{
+  "name": "social-editing-pdf",
+  "homepage": "https://github.com/alankyshum/social-editing-pdf",
+  "authors": [
+    "Alan Shum <alan200994@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "moduleType": [
+    "es6"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "pdfjs-dist": "mozilla/pdfjs-dist#~1.5.228"
+  }
+}
