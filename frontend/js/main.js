@@ -7,9 +7,18 @@ var domList = {
     container: document.getElementById('file-container'),
     template: document.getElementById('file')
   },
+  thumbnail: {
+    container: document.getElementById('thumbnails-container'),
+    title: document.querySelector('#thumbnails-container .file-header')
+  },
   pdf: {
     container: document.getElementById('pdf-container'),
     title: document.querySelector('#pdf-viewer .file-header')
+  }
+}
+var config = {
+  thumbnail: {
+    scale: 0.2
   }
 }
 
@@ -32,7 +41,7 @@ if (!window.requestAnimationFrame) {
 // LOAD PDF
 var renderPDF = (url, canvasContainer, options) => {
   var options = options || { scale: 1 };
-  domList.pdf.container.innerHTML = "";
+  canvasContainer.innerHTML = "";
 
   var renderPage = (page) => {
     var viewport = page.getViewport(options.scale);
@@ -45,14 +54,22 @@ var renderPDF = (url, canvasContainer, options) => {
 
     canvas.height = viewport.height;
     canvas.width = viewport.width;
+    if (options.isThumbnail) {
+      canvas.onclick = () => {
+        domList.pdf.container.children[page.pageIndex].scrollIntoView()
+      }
+    }
     canvasContainer.appendChild(canvas);
 
     page.render(renderContext);
   }
 
   var renderPages = (pdfDoc) => {
+    console.log(pdfDoc);
     for(var num = 1; num <= pdfDoc.numPages; num++)
-      pdfDoc.getPage(num).then(renderPage);
+      pdfDoc.getPage(num).then((page) => {
+        renderPage(page);
+      });
   }
   // PDFJS.disableWorker = true;
   PDFJS.getDocument(url).then(renderPages);
@@ -87,5 +104,10 @@ var selectPDF = (e) => {
   e.classList.toggle('active');
   domList.pdf.title.textContent = e.dataset.file;
 
-  renderPDF("file/"+e.dataset.file, domList.pdf.container);
+  renderPDF("file/"+e.dataset.file, domList.pdf.container, {scale: 1});
+  renderPDF("file/"+e.dataset.file, domList.thumbnail.container, {scale: config.thumbnail.scale, isThumbnail: true});
+
+  domList.pdf.container.onscroll = (evt) => {
+    domList.thumbnail.container.scrollTop = evt.srcElement.scrollTop*config.thumbnail.scale;
+  }
 }

@@ -32,7 +32,7 @@ $navbarHeight: 40px;
   > div {
     height: 100vh;
   }
-  #file-container, #pdf-container {
+  #file-container, #pdf-container, #thumbnails-container {
     overflow: auto;
     height: calc(100vh - #{$navbarHeight});
   }

@@ -19,7 +19,7 @@
   justify-content: center; }
   #container > div {
     height: 100vh; }
-  #container #file-container, #container #pdf-container {
+  #container #file-container, #container #pdf-container, #container #thumbnails-container {
     overflow: auto;
     height: calc(100vh - 40px); }
 
