@@ -14,6 +14,12 @@ var domList = {
   pdf: {
     container: document.getElementById('pdf-container'),
     title: document.querySelector('#pdf-viewer .file-header')
+  },
+  demoPanel: {
+    container: document.getElementById('demoPanel')
+  },
+  msgBox: {
+    container: document.getElementById('msg')
   }
 }
 var config = {
@@ -21,10 +27,31 @@ var config = {
     scale: 0.2
   }
 }
+var bookmarkInfo = {
+  user: {
+    username: null, // identified for the current user
+    role: null, // students, or professor
+    currentPDF: null,
+    bookmarkPage: null // page to be submitted to server
+  },
+  db: {
+    bookmarkedPages: [] // for current PDF file
+  }
+}
 
 /*
 SCRIPTS
  */
+// HELPER FUNCTIONS
+var showMsg = (msg) => {
+  domList.msgBox.container.textContent = msg;
+  domList.msgBox.container.classList.add('fadeIn');
+  setTimeout(() => {
+    domList.msgBox.container.classList.remove('fadeIn');
+  }, 5000);
+}
+
+
 // CROSS-BROWSER SUPPORT
 if (!window.requestAnimationFrame) {
   window.requestAnimationFrame = (function() {
@@ -110,4 +137,16 @@ var selectPDF = (e) => {
   domList.pdf.container.onscroll = (evt) => {
     domList.thumbnail.container.scrollTop = evt.srcElement.scrollTop*config.thumbnail.scale;
   }
+}
+
+
+// BOOKMARK SYSTEM
+var setUser = () => {
+  var username = domList.demoPanel.container.querySelector('.input[name="username"]').value
+    , role = domList.demoPanel.container.querySelector('.input[name="role"]').value;
+  bookmarkInfo.user = {
+    username: username,
+    role: role
+  };
+  showMsg(`Current User: ${username} set`)
 }

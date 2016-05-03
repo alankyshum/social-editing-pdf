@@ -25,6 +25,17 @@
       </div>
     </div>
 
+    <div id="demoPanel">
+      <input type="text" name="username" class='input' placeholder="username" value='alan'>
+      <select class="input" name="role">
+        <option selected value='student'>Student</option>
+        <option value='prof'>Professor</option>
+      </select>
+      <button type="button" name="setUserBtn" onclick='setUser();'>Set User</button>
+    </div>
+
+    <div id="msg"></div>
+
     <!-- TEMPLATES -->
     <template id="file">
       <div class="fileItem" data-file onclick='selectPDF(this);'>

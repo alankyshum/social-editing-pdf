@@ -5,6 +5,7 @@
  */
 $themeColour: #3c98ca;
 $darkBlue: #1C598E;
+$green: #3F7909;
 $medGrey: #545454;
 
 $navbarHeight: 40px;
@@ -111,4 +112,72 @@ $fileItemMargin: 5px;
 #pdf-viewer {
   width: 60vw;
   flex-grow: 0;
+}
+
+
+// DEMO PANEL
+#demoPanel {
+  position: fixed;
+  opacity: .3;
+  padding: 10px 30px;
+  border: 2px solid white;
+  border-radius: 10px;
+  bottom: 10px;
+  right: 10px;
+  background-color: $themeColour;
+  transition: opacity .3s;
+  &:hover {
+    opacity: 1;
+  }
+  .input {
+    margin: 2px 5px;
+    border-radius: 3px;
+    border: 0;
+    padding: 5px 10px;
+    font-size: 16px;
+  }
+  button {
+    border: 2px solid white;
+    background-color: $green;
+    color: white;
+    border-radius: 5px;
+    padding: 5px 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+}
+
+
+// MSG BOX
+#msg {
+  color: white;
+  background-color: black;
+  opacity: .7;
+  border-radius: 7px;
+  padding: 15px 25px;
+  font-weight: 600;
+  position: fixed;
+  right: 15px;
+  &.fadeIn {
+    animation: fadeIn 5s;
+    animation-fill-mode: forwards;
+  }
+}
+@keyframes fadeIn {
+  0% {
+    bottom: -30px;
+    opacity: 0;
+  }
+  30% {
+    bottom: 90px;
+    opacity: .8;
+  }
+  70% {
+    bottom: 90px;
+    opacity: .8;
+  }
+  100% {
+    bottom: -30px;
+    opacity: 0;
+  }
 }
