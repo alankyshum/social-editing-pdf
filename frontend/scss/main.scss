@@ -133,16 +133,16 @@ $fileItemMargin: 5px;
         color: #545454;
         text-shadow: 0px 0px 5px white, 0px 0px 10px white;
       }
-    }
+    } // end:: bookmarkBtn
     canvas:hover + .bookmarkBtn {
       opacity: .8;
     }
-    &.active .bookmarkBtn, .bookmarkBtn:hover {
+    &.booked .bookmarkBtn, .bookmarkBtn:hover {
       .fa {
         color: $darkRed;
       }
     }
-  }
+  } // end:: canvasWrapper
 }
 @keyframes bouncing {
   0% {

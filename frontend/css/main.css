@@ -110,7 +110,7 @@
         text-shadow: 0px 0px 5px white, 0px 0px 10px white; }
     #pdf-viewer .canvasWrapper canvas:hover + .bookmarkBtn {
       opacity: .8; }
-    #pdf-viewer .canvasWrapper.active .bookmarkBtn .fa, #pdf-viewer .canvasWrapper .bookmarkBtn:hover .fa {
+    #pdf-viewer .canvasWrapper.booked .bookmarkBtn .fa, #pdf-viewer .canvasWrapper .bookmarkBtn:hover .fa {
       color: #b70000; }
 
 @-webkit-keyframes bouncing {

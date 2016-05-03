@@ -1,4 +1,5 @@
 const express = require('express')
+  , bodyParser = require('body-parser')
   , path = require('path')
   , fs = require('fs')
   , colors = require('colors')
@@ -89,8 +90,9 @@ fs.watch(path.join(__dirname, 'LFS', 'files'), {
  */
 
 var app = express();
-
+app.use(bodyParser.json());
 app.use(express.static( path.join(__dirname, 'frontend')) );
+
 app.get('/file/:name', (req, res) => {
   if (req.params.name.match(/.pdf$/i)) {
     res.sendFile(path.join(__dirname, 'LFS', 'files', req.params.name));
@@ -108,11 +110,41 @@ app.get('/api/filelist', (req, res) => {
     }
   })
   res.send(fileList);
-})
-app.all('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+});
+app.post('/api/bookmark', (req, res) => {
+  var bookmarkInfo = {
+    username: req.body.username,
+    role: req.body.role,
+    pdf: req.body.pdf,
+    pageNumber: req.body.pageNumber
+  };
+  if (!bookmarkInfo.username) {
+    res.sendStatus(500);
+    return;
+  }
+
+  var _existingUser = db('users').find({
+    username: bookmarkInfo.username
+  });
+  if (_existingUser) {
+    console.log(_existingUser.bookmark);
+    _existingUser.bookmark[bookmarkInfo.pdf].push(bookmarkInfo.pageNumber);
+    db.write();
+  } else {
+    db('users').push({
+      username: bookmarkInfo.username,
+      role: bookmarkInfo.role,
+      bookmark: {
+        [bookmarkInfo.pdf]: [bookmarkInfo.pageNumber]
+      }
+    })
+  }
+  res.sendStatus(200);
 })
 
+app.all('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+});
 app.listen('3030', () => {
   console.log('Server Listening at port 3030');
-})
+});

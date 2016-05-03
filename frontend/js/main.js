@@ -45,13 +45,16 @@ var bookmarkInfo = {
 /*
 SCRIPTS
  */
-// HELPER FUNCTIONS
+// SHOW MESSAGE LIKE ANDROID TOAST
 var showMsg = (msg) => {
   domList.msgBox.container.textContent = msg;
   domList.msgBox.container.classList.add('fadeIn');
   setTimeout(() => {
     domList.msgBox.container.classList.remove('fadeIn');
   }, 5000);
+}
+var JSONtoURL = (json) => {
+  return JSON.stringify(json).replace(/[{|}|"]/g, '').split(/:|,/).map((part, i) => {return i%2?"="+encodeURIComponent(part):encodeURIComponent(part);}).join('&').replace(/&=/g, '=');
 }
 
 
@@ -162,7 +165,27 @@ var setUser = () => {
   };
   showMsg(`Current User: ${username} set`)
 }
+
 var bookmarkThisPage = (pageIndex) => {
-  console.log(pageIndex);
-  showMsg(`Page ${pageIndex} bookmarked :)`)
+  if (!bookmarkInfo.user.username) {
+    showMsg("Set a user first");
+    return;
+  }
+  bookmarkInfo.user.currentPDF = domList.pdf.title.textContent;
+  bookmarkInfo.user.bookmarkPage = pageIndex;
+
+  xhttp.open('post', '/api/bookmark', true);
+  xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+  xhttp.onreadystatechange = () => {
+    if (xhttp.readyState == 4 && xhttp.status == 200) {
+      showMsg(`Page ${pageIndex} bookmarked :)`)
+      domList.pdf.container.getElementsByClassName('canvasWrapper')[pageIndex-1].classList.add('booked');
+    }
+  }
+  xhttp.send(JSON.stringify({
+    username: bookmarkInfo.user.username,
+    role: bookmarkInfo.user.role,
+    pdf: domList.pdf.title.textContent,
+    pageNumber: pageIndex
+  }));
 }
