@@ -19,6 +19,7 @@
     "tests"
   ],
   "dependencies": {
-    "pdfjs-dist": "mozilla/pdfjs-dist#~1.5.228"
+    "pdfjs-dist": "mozilla/pdfjs-dist#~1.5.228",
+    "font-awesome": "~4.6.1"
   }
 }
