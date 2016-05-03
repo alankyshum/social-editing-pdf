@@ -90,7 +90,11 @@ var app = express();
 
 app.use(express.static( path.join(__dirname, 'frontend')) );
 app.get('/file/:name', (req, res) => {
-  res.sendFile(path.join(__dirname, 'LFS', req.params.name));
+  if (req.params.name.match(/.pdf$/i)) {
+    res.sendFile(path.join(__dirname, 'LFS', 'files', req.params.name));
+  } else {
+    res.sendFile(path.join(__dirname, 'LFS', 'thumbnails', req.params.name));
+  }
 });
 
 app.all('*', (req, res) => {
