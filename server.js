@@ -235,6 +235,6 @@ io.on('connection', function(socket){
 app.all('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
-server.listen('3030', () => {
-  console.log('Server Listening at port 3030');
+server.listen('80', () => {
+  console.log('Server Listening at port 80');
 });
