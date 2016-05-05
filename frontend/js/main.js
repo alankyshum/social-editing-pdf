@@ -162,30 +162,18 @@ ctrl.user.set = (autoLogin) => {
   }
 
   // USER INFO UPDATE + DISPLAY
-  if (username.length && role.length && pageDB.user.username != username) {
+  if (username.length && role.length
+    && (pageDB.user.username != username || pageDB.user.role != role)) {
     // no empry data
     pageDB.user = {
       username: username,
       role: role
-    }
+    };
     ctrl.helper.showMsg(`Current User: ${username} set`);
     ctrl.helper.setCookie("currentUser", pageDB.user);
     domList.pdf.currentViewer.innerHTML = `<i class='fa fa-user'></i> ${username} (${role})`;
     domList.pdf.container.dataset.role = role; // for differentiated styling
   }
-
-  // LOAD BOOKMARKS
-  ctrl.bookmark.getList(null, username).then((bookmarkArray) => {
-    // clear existing bookmarks
-    var existingBookedPages = domList.pdf.container.querySelectorAll('canvasWrapper.booked');
-    Object.keys(existingBookedPages).forEach((pageIndex) => {
-      existingBookedPages[pageIndex].classList.remove('booked');
-    });
-    // update bookmarks
-    bookmarkArray.forEach((bookmarkIndex) => {
-      domList.pdf.container.querySelector(`[data-page-num="${bookmarkIndex}"]`).classList.add('booked')
-    })
-  })
 }
 
 
@@ -218,7 +206,13 @@ ctrl.pdf.select = (e) => {
     return Promise.all([
       ctrl.pdf.render("file/"+e.dataset.file, domList.pdf.container, {scale: 1, isThumbnail: false}),
       ctrl.pdf.render("file/"+e.dataset.file, domList.thumbnail.container, {scale: config.thumbnail.scale, isThumbnail: true})
-    ])
+    ]).then(() => {
+      return new Promise((resolve) => {
+        if (pageDB.user && pageDB.user.username && pageDB.user.role)
+          ctrl.bookmark.updateDisplayOnPDF(pageDB.user.username, pageDB.user.role);
+        resolve();
+      })
+    })
   })
 }
 
@@ -318,7 +312,7 @@ ctrl.pdf.render = (url, canvasContainer, options) => {
 // ====================================
 // BOOKMARKS ==========================
 // ====================================
-ctrl.bookmark.getList = (filename, username) => {
+ctrl.bookmark.getList = (filename, username, role) => {
   // no filename, auto set the current one
   // no username, get all bookmarks
   filename = filename?filename:pageDB.pdf.currentPDF;
@@ -333,10 +327,11 @@ ctrl.bookmark.getList = (filename, username) => {
     }
 
     var requestJSON;
-    if (username) {
+    if (username && role) {
       // get bookmark list from a user
       requestJSON = {
         username: username,
+        role: role,
         filename: filename
       };
     } else {
@@ -347,6 +342,21 @@ ctrl.bookmark.getList = (filename, username) => {
     }
     xhttp.send(JSON.stringify(requestJSON));
   }); //end:: promise
+}
+
+// UPDATE BOOKMARKS ON PDF PAGE
+ctrl.bookmark.updateDisplayOnPDF = (username, role) => {
+  ctrl.bookmark.getList(null, username, role).then((bookmarkArray) => {
+    // clear existing bookmarks
+    var existingBookedPages = domList.pdf.container.querySelectorAll('canvasWrapper.booked');
+    Object.keys(existingBookedPages).forEach((pageIndex) => {
+      existingBookedPages[pageIndex].classList.remove('booked');
+    });
+    // update bookmarks
+    bookmarkArray.forEach((bookmarkIndex) => {
+      domList.pdf.container.querySelector(`[data-page-num="${bookmarkIndex}"]`).classList.add('booked')
+    })
+  })
 }
 
 ctrl.bookmark.updateDiv = (pageNum, bookmarkDiv, pageBookmarks) => {
@@ -383,4 +393,6 @@ domList.pdf.container.onscroll = (evt) => {
 ctrl.explorer.update().then(() => {
   // AUTO LOGIN
   ctrl.user.set(true);
+  // RELOAD BOOKMARKS WHEN USER'S SWITCHED
+  ctrl.bookmark.updateDisplayOnPDF(pageDB.user.username, pageDB.user.role);
 })

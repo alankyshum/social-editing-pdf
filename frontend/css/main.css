@@ -173,6 +173,10 @@ body {
   transition: opacity .3s; }
   #demoPanel:hover {
     opacity: 1; }
+  #demoPanel .title {
+    color: white;
+    font-size: 15px;
+    padding-left: 5px; }
   #demoPanel .input {
     margin: 2px 5px;
     border-radius: 3px;

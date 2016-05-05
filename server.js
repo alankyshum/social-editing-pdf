@@ -110,7 +110,6 @@ app.get('/api/filelist', (req, res) => {
       thumbnail: filename.match(/(.+).pdf$/i)[1]+".png"
     }
   })
-  res.setRequestHeader('Content-Type', 'Application/JSON')
   res.send(fileList);
 });
 
@@ -129,7 +128,8 @@ app.post('/api/setbookmark', (req, res) => {
   }
 
   var _existingUser = db('users').find({
-    username: bookmarkInfo.username
+    username: bookmarkInfo.username,
+    role: bookmarkInfo.role
   });
   var msg = "";
   if (_existingUser) {
@@ -160,8 +160,12 @@ app.post('/api/getbookmarks', (req, res) => {
   // RETRIEVE BOOKMAKRS
   var filename = req.body.filename;
 
-  if (req.body.username) {
-    var bookmarkArray = db('users').find({"username": req.body.username}) && db('users').find({"username": req.body.username}).bookmark[filename] || [];
+  if (req.body.username && req.body.role) {
+    var _existingUser = db('users').find({
+      "username": req.body.username,
+      "role": req.body.role
+    });
+    var bookmarkArray = _existingUser && _existingUser.bookmark[filename] || [];
     res.send(bookmarkArray)
   } else {
     var bookmarkCnt = {};

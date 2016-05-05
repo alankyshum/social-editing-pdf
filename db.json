@@ -58,9 +58,30 @@
           2
         ],
         "04_Humanability.pdf": [
+          4,
           1,
-          2,
-          4
+          2
+        ]
+      }
+    },
+    {
+      "username": "xm2",
+      "role": "prof",
+      "bookmark": {
+        "04_Humanability.pdf": [
+          1
+        ]
+      }
+    },
+    {
+      "username": "xm",
+      "role": "student",
+      "bookmark": {
+        "04_Humanability.pdf": [
+          2
+        ],
+        "08_Auditory_Haptic_Interaction.pdf": [
+          2
         ]
       }
     }
