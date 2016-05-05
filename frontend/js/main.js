@@ -195,25 +195,27 @@ ctrl.thumbnail.updateBookmarks = (allBookmarks) => {
 // ====================================
 // SELECT PDF FROM FILE EXPLORER
 ctrl.pdf.select = (e) => {
-  var _activeItems = document.querySelector('#file-explorer .fileItem.active');
-  _activeItems && _activeItems.classList.toggle('active');
-  e.classList.toggle('active');
-  pageDB.pdf.currentPDF = e.dataset.file;
-  domList.pdf.title.textContent = e.dataset.file;
-  domList.thumbnail.container.innerHTML = "";
-  return ctrl.bookmark.getList().then((bookmarkList) => {
-    pageDB.db.bookmarkedPages = bookmarkList;
-    return Promise.all([
-      ctrl.pdf.render("file/"+e.dataset.file, domList.pdf.container, {scale: 1, isThumbnail: false}),
-      ctrl.pdf.render("file/"+e.dataset.file, domList.thumbnail.container, {scale: config.thumbnail.scale, isThumbnail: true})
-    ]).then(() => {
-      return new Promise((resolve) => {
-        if (pageDB.user && pageDB.user.username && pageDB.user.role)
+  if (pageDB.pdf.currentPDF != e.dataset.file) {
+    var _activeItems = document.querySelector('#file-explorer .fileItem.active');
+    _activeItems && _activeItems.classList.toggle('active');
+    e.classList.toggle('active');
+    pageDB.pdf.currentPDF = e.dataset.file;
+    domList.pdf.title.textContent = e.dataset.file;
+    domList.thumbnail.container.innerHTML = "";
+    return ctrl.bookmark.getList().then((bookmarkList) => {
+      pageDB.db.bookmarkedPages = bookmarkList;
+      return Promise.all([
+        ctrl.pdf.render("file/"+e.dataset.file, domList.pdf.container, {scale: 1, isThumbnail: false}),
+        ctrl.pdf.render("file/"+e.dataset.file, domList.thumbnail.container, {scale: config.thumbnail.scale, isThumbnail: true})
+      ]).then(() => {
+        return new Promise((resolve) => {
+          if (pageDB.user && pageDB.user.username && pageDB.user.role)
           ctrl.bookmark.updateDisplayOnPDF(pageDB.user.username, pageDB.user.role);
-        resolve();
+          resolve();
+        })
       })
     })
-  })
+  }
 }
 
 ctrl.pdf.toggleBookmark = (pageIndex) => {
