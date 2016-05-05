@@ -134,8 +134,10 @@
         text-shadow: 0px 0px 5px white, 0px 0px 10px white; }
     #pdf-viewer .canvasWrapper canvas:hover + .bookmarkBtn {
       opacity: .8; }
-    #pdf-viewer .canvasWrapper.booked .bookmarkBtn .fa, #pdf-viewer .canvasWrapper .bookmarkBtn:hover .fa {
-      color: #b70000; }
+  #pdf-viewer #pdf-container[data-role="student"] .canvasWrapper.booked .bookmarkBtn .fa, #pdf-viewer #pdf-container[data-role="student"] .canvasWrapper .bookmarkBtn:hover .fa {
+    color: #b70000; }
+  #pdf-viewer #pdf-container[data-role="prof"] .canvasWrapper.booked .bookmarkBtn .fa, #pdf-viewer #pdf-container[data-role="prof"] .canvasWrapper .bookmarkBtn:hover .fa {
+    color: #E6B810; }
 
 @-webkit-keyframes bouncing {
   0% {

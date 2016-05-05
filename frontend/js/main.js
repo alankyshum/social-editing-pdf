@@ -183,6 +183,7 @@ var setUser = () => {
       username: username,
       role: role
     };
+    domList.pdf.container.dataset.role = role; // for differentiated styling
     isSwitchUser && showMsg(`Current User: ${username} set`);
     getBookmarkedList(null, username).then((bookmarkArray) => {
       // console.log(bookmarkArray);

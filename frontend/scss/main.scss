@@ -8,6 +8,7 @@ $darkBlue: #1C598E;
 $green: #3F7909;
 $medGrey: #545454;
 $darkRed: #b70000;
+$darkYellow: #E6B810;
 
 $navbarHeight: 40px;
 
@@ -164,12 +165,22 @@ $fileItemMargin: 5px;
     canvas:hover + .bookmarkBtn {
       opacity: .8;
     }
-    &.booked .bookmarkBtn, .bookmarkBtn:hover {
+
+  } // end:: canvasWrapper
+  #pdf-container[data-role="student"] {
+    .canvasWrapper.booked .bookmarkBtn, .canvasWrapper .bookmarkBtn:hover {
       .fa {
         color: $darkRed;
       }
     }
-  } // end:: canvasWrapper
+  }
+  #pdf-container[data-role="prof"] {
+    .canvasWrapper.booked .bookmarkBtn, .canvasWrapper .bookmarkBtn:hover {
+      .fa {
+        color: $darkYellow;
+      }
+    }
+  }
 }
 @keyframes bouncing {
   0% {
