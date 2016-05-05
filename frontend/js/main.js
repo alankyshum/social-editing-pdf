@@ -41,6 +41,9 @@ var bookmarkInfo = {
     bookmarkedPages: [] // for current PDF file
   }
 }
+var pdfInfo = {
+  numPages: 0
+}
 
 /*
 SCRIPTS
@@ -56,7 +59,6 @@ var showMsg = (msg) => {
 var JSONtoURL = (json) => {
   return JSON.stringify(json).replace(/[{|}|"]/g, '').split(/:|,/).map((part, i) => {return i%2?"="+encodeURIComponent(part):encodeURIComponent(part);}).join('&').replace(/&=/g, '=');
 }
-
 
 // CROSS-BROWSER SUPPORT
 if (!window.requestAnimationFrame) {
@@ -74,9 +76,9 @@ if (!window.requestAnimationFrame) {
 // LOAD PDF
 var renderPDF = (url, canvasContainer, options) => {
   var options = options || { scale: 1 };
-  canvasContainer.innerHTML = "";
 
-  var renderPage = (page) => {
+  // RENDER SINGLE PAGE
+  var renderPage = (page, canvasWrapper) => {
     var viewport = page.getViewport(options.scale);
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
@@ -84,8 +86,6 @@ var renderPDF = (url, canvasContainer, options) => {
       canvasContext: ctx,
       viewport: viewport
     };
-    var canvasWrapper = document.createElement('div');
-    canvasWrapper.classList.add('canvasWrapper');
 
     canvas.height = viewport.height;
     canvas.width = viewport.width;
@@ -109,20 +109,28 @@ var renderPDF = (url, canvasContainer, options) => {
       canvasWrapper.appendChild(canvas);
       var bookmarkBtn = domList.bookmarkBtn.template.content.cloneNode(true);
       canvasWrapper.appendChild(bookmarkBtn);
-      canvasWrapper.lastElementChild.onclick = () => {
-        bookmarkThisPage(page.pageIndex+1);
-      }
+      canvasWrapper.lastElementChild.setAttribute('onclick', `bookmarkThisPage(${page.pageIndex+1});`);
     }
-
-    canvasContainer.appendChild(canvasWrapper);
 
     page.render(renderContext);
   }
 
+  // RENDER ALL PAGES
   var renderPages = (pdfDoc) => {
-    for(var num = 1; num <= pdfDoc.numPages; num++)
-      pdfDoc.getPage(num).then(renderPage);
+    pdfInfo.numPages = pdfDoc.numPages;
+    canvasContainer.innerHTML = "";
+    for(var num = 1; num <= pdfDoc.numPages; num++) {
+      var _canvasDiv = document.createElement('div');
+      _canvasDiv.classList.add('canvasWrapper');
+      _canvasDiv.dataset.pageNum = num;
+      canvasContainer.appendChild(_canvasDiv);
+
+      pdfDoc.getPage(num).then((page) => {
+        renderPage(page, canvasContainer.querySelector(`[data-page-num="${page.pageIndex+1}"]`))
+      })
+    }
   }
+
   // PDFJS.disableWorker = true;
   PDFJS.getDocument(url).then(renderPages);
 }
@@ -156,7 +164,7 @@ var selectPDF = (e) => {
   e.classList.toggle('active');
   bookmarkInfo.user.currentPDF = e.dataset.file;
   domList.pdf.title.textContent = e.dataset.file;
-
+  domList.thumbnail.container.innerHTML = "";
   getBookmarkedList().then((bookmarkList) => {
     bookmarkInfo.db.bookmarkedPages = bookmarkList;
     renderPDF("file/"+e.dataset.file, domList.pdf.container, {scale: 1, isThumbnail: false});
