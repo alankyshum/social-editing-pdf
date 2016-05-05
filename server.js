@@ -161,7 +161,7 @@ app.post('/api/getbookmarks', (req, res) => {
   var filename = req.body.filename;
 
   if (req.body.username) {
-    var bookmarkArray = db('users').find({"username": req.body.username}).bookmark[filename];
+    var bookmarkArray = db('users').find({"username": req.body.username}) && db('users').find({"username": req.body.username}).bookmark[filename] || [];
     res.send(bookmarkArray)
   } else {
     var bookmarkCnt = {};
