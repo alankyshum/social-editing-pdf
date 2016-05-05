@@ -114,7 +114,8 @@ app.get('/api/filelist', (req, res) => {
 });
 
 // POST APIS
-app.post('/api/bookmark', (req, res) => {
+app.post('/api/setbookmark', (req, res) => {
+  // SET BOOKMARK
   var bookmarkInfo = {
     username: req.body.username,
     role: req.body.role,
@@ -129,9 +130,17 @@ app.post('/api/bookmark', (req, res) => {
   var _existingUser = db('users').find({
     username: bookmarkInfo.username
   });
+  var msg = "";
   if (_existingUser) {
     if (!_existingUser.bookmark[bookmarkInfo.pdf]) _existingUser.bookmark[bookmarkInfo.pdf] = [];
-    _existingUser.bookmark[bookmarkInfo.pdf].push(bookmarkInfo.pageNumber);
+    var existingPageIndex = _existingUser.bookmark[bookmarkInfo.pdf].indexOf(bookmarkInfo.pageNumber);
+    if (~existingPageIndex) {
+      _existingUser.bookmark[bookmarkInfo.pdf].splice(existingPageIndex, 1);
+      msg = "unbooked";
+    } else {
+      _existingUser.bookmark[bookmarkInfo.pdf].push(bookmarkInfo.pageNumber);
+      msg = "booked";
+    }
     db.write();
   } else {
     db('users').push({
@@ -141,21 +150,30 @@ app.post('/api/bookmark', (req, res) => {
         [bookmarkInfo.pdf]: [bookmarkInfo.pageNumber]
       }
     })
+    msg = "booked";
   }
-  res.sendStatus(200);
+  res.sendStatus(msg);
 });
-app.post('/api/allbookmarks', (req, res) => {
-  var filename = req.body.filename;
-  var bookmarkCnt = {};
-  db.object.users.forEach((user) => {
-    user.bookmark[filename] && user.bookmark[filename].forEach((pageNum) => {
-      if (!bookmarkCnt[user.role]) bookmarkCnt[user.role] = {};
-      if (!bookmarkCnt[user.role][pageNum]) bookmarkCnt[user.role][pageNum] = 0;
-      bookmarkCnt[user.role][pageNum]++;
-    })
-  })
 
-  res.send(bookmarkCnt);
+app.post('/api/getbookmarks', (req, res) => {
+  // RETRIEVE BOOKMAKRS
+  var filename = req.body.filename;
+
+  if (req.body.username) {
+    var bookmarkArray = db('users').find({"username": req.body.username}).bookmark[filename];
+    res.send(bookmarkArray)
+  } else {
+    var bookmarkCnt = {};
+    db.object.users.forEach((user) => {
+      user.bookmark[filename] && user.bookmark[filename].forEach((pageNum) => {
+        if (!bookmarkCnt[user.role]) bookmarkCnt[user.role] = {};
+        if (!bookmarkCnt[user.role][pageNum]) bookmarkCnt[user.role][pageNum] = 0;
+        bookmarkCnt[user.role][pageNum]++;
+      })
+    })
+    res.send(bookmarkCnt);
+  }
+
 });
 
 

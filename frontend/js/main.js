@@ -34,7 +34,6 @@ var bookmarkInfo = {
   user: {
     username: null, // identified for the current user
     role: null, // students, or professor
-    currentPDF: null,
     bookmarkPage: null // page to be submitted to server
   },
   db: {
@@ -42,7 +41,8 @@ var bookmarkInfo = {
   }
 }
 var pdfInfo = {
-  numPages: 0
+  numPages: 0,
+  currentPDF: ""
 }
 
 /*
@@ -109,7 +109,7 @@ var renderPDF = (url, canvasContainer, options) => {
       canvasWrapper.appendChild(canvas);
       var bookmarkBtn = domList.bookmarkBtn.template.content.cloneNode(true);
       canvasWrapper.appendChild(bookmarkBtn);
-      canvasWrapper.lastElementChild.setAttribute('onclick', `bookmarkThisPage(${page.pageIndex+1});`);
+      canvasWrapper.lastElementChild.setAttribute('onclick', `togglePageBookmark(${page.pageIndex+1});`);
     }
 
     page.render(renderContext);
@@ -162,7 +162,7 @@ var selectPDF = (e) => {
   var _activeItems = document.querySelector('#file-explorer .fileItem.active');
   _activeItems && _activeItems.classList.toggle('active');
   e.classList.toggle('active');
-  bookmarkInfo.user.currentPDF = e.dataset.file;
+  pdfInfo.currentPDF = e.dataset.file;
   domList.pdf.title.textContent = e.dataset.file;
   domList.thumbnail.container.innerHTML = "";
   getBookmarkedList().then((bookmarkList) => {
@@ -177,27 +177,49 @@ var selectPDF = (e) => {
 var setUser = () => {
   var username = domList.demoPanel.container.querySelector('.input[name="username"]').value
     , role = domList.demoPanel.container.querySelector('.input[name="role"]').value;
-  bookmarkInfo.user = {
-    username: username,
-    role: role
-  };
-  showMsg(`Current User: ${username} set`)
+  if (username && role) {
+    var isSwitchUser = bookmarkInfo.user==username;
+    bookmarkInfo.user = {
+      username: username,
+      role: role
+    };
+    isSwitchUser && showMsg(`Current User: ${username} set`);
+    getBookmarkedList(null, username).then((bookmarkArray) => {
+      // console.log(bookmarkArray);
+      // clear existing bookmarks
+      var existingBookedPages = domList.pdf.container.querySelectorAll('canvasWrapper.booked');
+      Object.keys(existingBookedPages).forEach((pageIndex) => {
+        existingBookedPages[pageIndex].classList.remove('booked');
+      });
+      // update bookmarks
+      bookmarkArray.forEach((bookmarkIndex) => {
+        domList.pdf.container.querySelector(`[data-page-num="${bookmarkIndex}"]`).classList.add('booked')
+      })
+    })
+  }
 }
 
-var bookmarkThisPage = (pageIndex) => {
+var togglePageBookmark = (pageIndex) => {
   if (!bookmarkInfo.user.username) {
     showMsg("Set a user first");
     return;
   }
-  bookmarkInfo.user.currentPDF = domList.pdf.title.textContent;
+  pdfInfo.currentPDF = domList.pdf.title.textContent;
   bookmarkInfo.user.bookmarkPage = pageIndex;
 
-  xhttp.open('post', '/api/bookmark', true);
+  xhttp.open('post', '/api/setbookmark', true);
   xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
   xhttp.onreadystatechange = () => {
     if (xhttp.readyState == 4 && xhttp.status == 200) {
-      showMsg(`Page ${pageIndex} bookmarked :)`)
-      domList.pdf.container.getElementsByClassName('canvasWrapper')[pageIndex-1].classList.add('booked');
+      if (xhttp.responseText == "booked") {
+        showMsg(`Page ${pageIndex} bookmarked`);
+        domList.pdf.container.getElementsByClassName('canvasWrapper')[pageIndex-1].classList.add('booked');
+      } else if (xhttp.responseText == "unbooked") {
+        showMsg(`Page ${pageIndex} bookmark removed`);
+        domList.pdf.container.getElementsByClassName('canvasWrapper')[pageIndex-1].classList.remove('booked');
+      }
+      // TODO: update global bookmark list
+
     }
   }
   xhttp.send(JSON.stringify({
@@ -208,26 +230,32 @@ var bookmarkThisPage = (pageIndex) => {
   }));
 }
 
-var getBookmarkedList = (user, filename) => {
-  filename = filename?filename:bookmarkInfo.user.currentPDF;
-  if (user) {
-    // get bookmark list from a user
-
-  } else {
-    // get bookmark list from all users
-    return new Promise((resolve, reject) => {
-      xhttp.open('post', '/api/allbookmarks', true);
-      xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-      xhttp.onreadystatechange = () => {
-        if (xhttp.readyState == 4 && xhttp.status == 200) {
-          resolve(JSON.parse(xhttp.responseText));
-        }
+var getBookmarkedList = (filename, username) => {
+  filename = filename?filename:pdfInfo.currentPDF;
+  return new Promise((resolve, reject) => {
+    xhttp.open('post', '/api/getbookmarks', true);
+    xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhttp.onreadystatechange = () => {
+      if (xhttp.readyState == 4 && xhttp.status == 200) {
+        resolve(JSON.parse(xhttp.responseText));
       }
-      xhttp.send(JSON.stringify({
+    }
+
+    var requestJSON;
+    if (username) {
+      // get bookmark list from a user
+      requestJSON = {
+        username: username,
         filename: filename
-      }));
-    })
-  }
+      };
+    } else {
+      // get bookmark list from all users
+      requestJSON = {
+        filename: filename
+      };
+    }
+    xhttp.send(JSON.stringify(requestJSON));
+  }); //end:: promise
 }
 
 
