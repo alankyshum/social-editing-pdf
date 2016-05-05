@@ -385,7 +385,7 @@ ctrl.bookmark.updateDiv = (pageNum, bookmarkDiv, pageBookmarks) => {
 domList.pdf.container.onscroll = (evt) => {
   domList.thumbnail.container.scrollTop = evt.srcElement.scrollTop*config.thumbnail.scale;
 }
-
+var socket = io();
 
  //    _  _   _ _____ ___  ___ _   _ _  _
  //   /_\| | | |_   _/ _ \| _ \ | | | \| |
@@ -397,4 +397,10 @@ ctrl.explorer.update().then(() => {
   ctrl.user.set(true);
   // RELOAD BOOKMARKS WHEN USER'S SWITCHED
   ctrl.bookmark.updateDisplayOnPDF(pageDB.user.username, pageDB.user.role);
+  // SOCKET LISTENER, FOR INSTANT BOOKMARK UPDATE
+  socket.emit('pageInfo.filename', pageDB.pdf.currentPDF);
+  socket.on('db.bookmark.updated', (data) => {
+    // when others updated bookmark
+    ctrl.thumbnail.updateBookmarks(data.bookmarkList);
+  });
 })

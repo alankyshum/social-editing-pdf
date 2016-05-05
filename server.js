@@ -9,6 +9,34 @@ const express = require('express')
 
 const db = low('db.json', {storage});
 
+
+/**
+ * -----------------------
+ * GLOBAL VARIABLES ------
+ * -----------------------
+ */
+var pageInfo = {};
+
+
+/**
+ * -----------------------
+ * HELPER FUNCTIONS ------
+ * -----------------------
+ */
+var getAllBookmarks = (filename) => {
+  var bookmarkCnt = {};
+  db.object.users.forEach((user) => {
+    user.bookmark[filename] && user.bookmark[filename].forEach((pageNum) => {
+      if (!bookmarkCnt[user.role]) bookmarkCnt[user.role] = {};
+      if (!bookmarkCnt[user.role][pageNum]) bookmarkCnt[user.role][pageNum] = 0;
+      bookmarkCnt[user.role][pageNum]++;
+    })
+  })
+  return bookmarkCnt;
+}
+
+
+
 /**
  * -----------------
  * ROUTINE FUNCTIONS
@@ -90,8 +118,12 @@ fs.watch(path.join(__dirname, 'LFS', 'files'), {
  */
 
 var app = express();
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
+
 app.use(bodyParser.json());
 app.use(express.static( path.join(__dirname, 'frontend')) );
+
 
 // GET APIS
 app.get('/file/:name', (req, res) => {
@@ -101,6 +133,7 @@ app.get('/file/:name', (req, res) => {
     res.sendFile(path.join(__dirname, 'LFS', 'thumbnails', req.params.name));
   }
 });
+
 app.get('/api/filelist', (req, res) => {
   var fileList = db.object.fileList.filter((filename) => {
     return filename != '.gitignore'
@@ -112,6 +145,7 @@ app.get('/api/filelist', (req, res) => {
   })
   res.send(fileList);
 });
+
 
 // POST APIS
 app.post('/api/setbookmark', (req, res) => {
@@ -168,23 +202,41 @@ app.post('/api/getbookmarks', (req, res) => {
     var bookmarkArray = _existingUser && _existingUser.bookmark[filename] || [];
     res.send(bookmarkArray)
   } else {
-    var bookmarkCnt = {};
-    db.object.users.forEach((user) => {
-      user.bookmark[filename] && user.bookmark[filename].forEach((pageNum) => {
-        if (!bookmarkCnt[user.role]) bookmarkCnt[user.role] = {};
-        if (!bookmarkCnt[user.role][pageNum]) bookmarkCnt[user.role][pageNum] = 0;
-        bookmarkCnt[user.role][pageNum]++;
-      })
-    })
-    res.send(bookmarkCnt);
+    res.send(getAllBookmarks(filename));
   }
 
+});
+
+
+
+ // __      ___ _____ ___ _  _ ___ ___
+ // \ \    / /_\_   _/ __| || | __| _ \
+ //  \ \/\/ / _ \| || (__| __ | _||   /
+ //   \_/\_/_/ \_\_| \___|_||_|___|_|_\
+ //
+io.on('connection', function(socket){
+  console.log('[SOCKET] a user connected');
+
+  socket.on('disconnect', function(){
+    console.log('user disconnected');
+  });
+  socket.on('pageInfo.filename', (filename) => {
+    console.log(`SERVING: ${filename}`);
+    pageInfo.filename = filename;
+  })
+
+  // WATCHERS HERE
+  fs.watch(path.join(__dirname, 'db.json'), (evt, filename) => {
+    socket.emit('db.bookmark.updated', {
+      bookmarkList: getAllBookmarks(pageInfo.filename)
+    });
+  });
 });
 
 
 app.all('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
-app.listen('3030', () => {
+server.listen('3030', () => {
   console.log('Server Listening at port 3030');
 });
