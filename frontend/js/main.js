@@ -1,6 +1,8 @@
-/*
-GLOBAL VARIABLES
- */
+// __   ___   ___ ___   _   ___ _    ___ ___
+// \ \ / /_\ | _ \_ _| /_\ | _ ) |  | __/ __|
+//  \ V / _ \|   /| | / _ \| _ \ |__| _|\__ \
+//   \_/_/ \_\_|_\___/_/ \_\___/____|___|___/
+//
 var xhttp = new XMLHttpRequest();
 var domList = {
   file: {
@@ -44,22 +46,22 @@ var pdfInfo = {
   numPages: 0,
   currentPDF: ""
 }
-
-/*
-SCRIPTS
- */
-// SHOW MESSAGE LIKE ANDROID TOAST
-var showMsg = (msg) => {
-  domList.msgBox.container.textContent = msg;
-  domList.msgBox.container.classList.add('fadeIn');
-  setTimeout(() => {
-    domList.msgBox.container.classList.remove('fadeIn');
-  }, 5000);
-}
-var JSONtoURL = (json) => {
-  return JSON.stringify(json).replace(/[{|}|"]/g, '').split(/:|,/).map((part, i) => {return i%2?"="+encodeURIComponent(part):encodeURIComponent(part);}).join('&').replace(/&=/g, '=');
+var ctrl = {
+  helper: {},
+  pdf: {},
+  explorer: {},
+  user: {},
+  bookmark: {},
+  thumbnail: {}
 }
 
+
+
+//  ___ _  _ ___ ___ ___ ___ _____ ___
+// / __| \| |_ _| _ \ _ \ __|_   _/ __|
+// \__ \ .` || ||  _/  _/ _|  | | \__ \
+// |___/_|\_|___|_| |_| |___| |_| |___/
+//
 // CROSS-BROWSER SUPPORT
 if (!window.requestAnimationFrame) {
   window.requestAnimationFrame = (function() {
@@ -73,8 +75,145 @@ if (!window.requestAnimationFrame) {
   })();
 }
 
+
+//  ___ ___ ___ ___ _____ ___
+// / __| _ \_ _| _ \_   _/ __|
+// \__ \   /| ||  _/ | | \__ \
+// |___/_|_\___|_|   |_| |___/
+//
+// ====================================
+// HELPER =============================
+// ====================================
+// SHOW MESSAGE LIKE ANDROID TOAST
+ctrl.helper.showMsg = (msg) => {
+  domList.msgBox.container.textContent = msg;
+  domList.msgBox.container.classList.add('fadeIn');
+  setTimeout(() => {
+    domList.msgBox.container.classList.remove('fadeIn');
+  }, 5000);
+}
+ctrl.helper.JSONtoURL = (json) => {
+  return JSON.stringify(json).replace(/[{|}|"]/g, '').split(/:|,/).map((part, i) => {return i%2?"="+encodeURIComponent(part):encodeURIComponent(part);}).join('&').replace(/&=/g, '=');
+}
+
+// ====================================
+// EXPLORER ===========================
+// ====================================
+// POPULATE FILE EXPLORER
+ctrl.explorer.update = () => {
+  xhttp.open('get', '/api/filelist', true);
+  xhttp.onreadystatechange = () => {
+    if (xhttp.readyState == 4 && xhttp.status == 200) {
+      var fileList = JSON.parse(xhttp.responseText);
+      fileList.forEach((file) => {
+        var fileItem = domList.file.template.content.cloneNode(true);
+        fileItem.querySelector('.filename').textContent = file.filename;
+        fileItem.querySelector('img').src = "/file/"+file.thumbnail;
+        domList.file.container.appendChild(fileItem);
+        domList.file.container.lastElementChild.dataset.file = file.filename;
+      })
+      // load PDF
+      ctrl.pdf.select(domList.file.container.children[0]);
+    }
+  }
+  xhttp.send();
+}
+ctrl.explorer.update();
+
+
+// ====================================
+// USES ===============================
+// ====================================
+ctrl.user.set = () => {
+  var username = domList.demoPanel.container.querySelector('.input[name="username"]').value
+    , role = domList.demoPanel.container.querySelector('.input[name="role"]').value;
+  if (username && role) {
+    var isSwitchUser = bookmarkInfo.user.username!=username;
+    bookmarkInfo.user = {
+      username: username,
+      role: role
+    };
+    domList.pdf.container.dataset.role = role; // for differentiated styling
+    isSwitchUser && ctrl.helper.showMsg(`Current User: ${username} set`);
+    ctrl.bookmark.getList(null, username).then((bookmarkArray) => {
+      // console.log(bookmarkArray);
+      // clear existing bookmarks
+      var existingBookedPages = domList.pdf.container.querySelectorAll('canvasWrapper.booked');
+      Object.keys(existingBookedPages).forEach((pageIndex) => {
+        existingBookedPages[pageIndex].classList.remove('booked');
+      });
+      // update bookmarks
+      bookmarkArray.forEach((bookmarkIndex) => {
+        domList.pdf.container.querySelector(`[data-page-num="${bookmarkIndex}"]`).classList.add('booked')
+      })
+    })
+  }
+}
+
+
+// ====================================
+// THUMBNAILS =========================
+// ====================================
+ctrl.thumbnail.updateBookmarks = (allBookmarks) => {
+  bookmarkInfo.db.bookmarkedPages = allBookmarks;
+  var canvasWrapperList = domList.thumbnail.container.querySelectorAll(`.canvasWrapper`);
+  Object.keys(canvasWrapperList).forEach((elementKey, pageIndex) => {
+    var cntDiv = canvasWrapperList[pageIndex].querySelector('.bookmark-count');
+    ctrl.bookmark.updateDiv(pageIndex+1, cntDiv, allBookmarks);
+  })
+}
+
+
+// ====================================
+// PDF ================================
+// ====================================
+// SELECT PDF FROM FILE EXPLORER
+ctrl.pdf.select = (e) => {
+  var _activeItems = document.querySelector('#file-explorer .fileItem.active');
+  _activeItems && _activeItems.classList.toggle('active');
+  e.classList.toggle('active');
+  pdfInfo.currentPDF = e.dataset.file;
+  domList.pdf.title.textContent = e.dataset.file;
+  domList.thumbnail.container.innerHTML = "";
+  ctrl.bookmark.getList().then((bookmarkList) => {
+    bookmarkInfo.db.bookmarkedPages = bookmarkList;
+    ctrl.pdf.render("file/"+e.dataset.file, domList.pdf.container, {scale: 1, isThumbnail: false});
+    ctrl.pdf.render("file/"+e.dataset.file, domList.thumbnail.container, {scale: config.thumbnail.scale, isThumbnail: true});
+  })
+}
+
+ctrl.pdf.toggleBookmark = (pageIndex) => {
+  if (!bookmarkInfo.user.username) {
+    ctrl.helper.showMsg("Set a user first");
+    return;
+  }
+  pdfInfo.currentPDF = domList.pdf.title.textContent;
+  bookmarkInfo.user.bookmarkPage = pageIndex;
+
+  xhttp.open('post', '/api/setbookmark', true);
+  xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+  xhttp.onreadystatechange = () => {
+    if (xhttp.readyState == 4 && xhttp.status == 200) {
+      if (xhttp.responseText == "booked") {
+        ctrl.helper.showMsg(`Page ${pageIndex} bookmarked`);
+        domList.pdf.container.getElementsByClassName('canvasWrapper')[pageIndex-1].classList.add('booked');
+      } else if (xhttp.responseText == "unbooked") {
+        ctrl.helper.showMsg(`Page ${pageIndex} bookmark removed`);
+        domList.pdf.container.getElementsByClassName('canvasWrapper')[pageIndex-1].classList.remove('booked');
+      }
+      ctrl.bookmark.getList().then(ctrl.thumbnail.updateBookmarks);
+    }
+  }
+  xhttp.send(JSON.stringify({
+    username: bookmarkInfo.user.username,
+    role: bookmarkInfo.user.role,
+    pdf: domList.pdf.title.textContent,
+    pageNumber: pageIndex
+  }));
+}
+
 // LOAD PDF
-var renderPDF = (url, canvasContainer, options) => {
+ctrl.pdf.render = (url, canvasContainer, options) => {
   var options = options || { scale: 1 };
 
   // RENDER SINGLE PAGE
@@ -97,19 +236,16 @@ var renderPDF = (url, canvasContainer, options) => {
       }
       canvasWrapper.appendChild(canvas);
 
-      var bookmarkCnt = document.createElement('div');
-      var studentCnt = bookmarkInfo.db.bookmarkedPages.student?bookmarkInfo.db.bookmarkedPages.student[page.pageIndex+1]:null
-        , profCnt = bookmarkInfo.db.bookmarkedPages.prof?bookmarkInfo.db.bookmarkedPages.prof[page.pageIndex+1]:null;
-      if (profCnt) bookmarkCnt.dataset.profCnt = profCnt;
-      if (studentCnt) bookmarkCnt.dataset.studentCnt = studentCnt;
-      bookmarkCnt.classList.add('bookmark-count');
-      canvasWrapper.appendChild(bookmarkCnt);
+      var bookmarkDiv = document.createElement('div');
+      ctrl.bookmark.updateDiv(page.pageIndex+1, bookmarkDiv, bookmarkInfo.db.bookmarkedPages);
+      bookmarkDiv.classList.add('bookmark-count');
+      canvasWrapper.appendChild(bookmarkDiv);
     } else {
       // real pdf viewer
       canvasWrapper.appendChild(canvas);
       var bookmarkBtn = domList.bookmarkBtn.template.content.cloneNode(true);
       canvasWrapper.appendChild(bookmarkBtn);
-      canvasWrapper.lastElementChild.setAttribute('onclick', `togglePageBookmark(${page.pageIndex+1});`);
+      canvasWrapper.lastElementChild.setAttribute('onclick', `ctrl.pdf.toggleBookmark(${page.pageIndex+1});`);
     }
 
     page.render(renderContext);
@@ -135,126 +271,11 @@ var renderPDF = (url, canvasContainer, options) => {
   PDFJS.getDocument(url).then(renderPages);
 }
 
-// POPULATE FILE EXPLORER
-var updateFileExplorer = () => {
-  xhttp.open('get', '/api/filelist', true);
-  xhttp.onreadystatechange = () => {
-    if (xhttp.readyState == 4 && xhttp.status == 200) {
-      var fileList = JSON.parse(xhttp.responseText);
-      fileList.forEach((file) => {
-        var fileItem = domList.file.template.content.cloneNode(true);
-        fileItem.querySelector('.filename').textContent = file.filename;
-        fileItem.querySelector('img').src = "/file/"+file.thumbnail;
-        domList.file.container.appendChild(fileItem);
-        domList.file.container.lastElementChild.dataset.file = file.filename;
-      })
-      // load PDF
-      selectPDF(domList.file.container.children[0]);
-    }
-  }
-  xhttp.send();
-}
-updateFileExplorer();
 
-
-// SELECT PDF FROM FILE EXPLORER
-var selectPDF = (e) => {
-  var _activeItems = document.querySelector('#file-explorer .fileItem.active');
-  _activeItems && _activeItems.classList.toggle('active');
-  e.classList.toggle('active');
-  pdfInfo.currentPDF = e.dataset.file;
-  domList.pdf.title.textContent = e.dataset.file;
-  domList.thumbnail.container.innerHTML = "";
-  getBookmarkedList().then((bookmarkList) => {
-    bookmarkInfo.db.bookmarkedPages = bookmarkList;
-    renderPDF("file/"+e.dataset.file, domList.pdf.container, {scale: 1, isThumbnail: false});
-    renderPDF("file/"+e.dataset.file, domList.thumbnail.container, {scale: config.thumbnail.scale, isThumbnail: true});
-  })
-}
-
-
-// BOOKMARK SYSTEM
-var setUser = () => {
-  var username = domList.demoPanel.container.querySelector('.input[name="username"]').value
-    , role = domList.demoPanel.container.querySelector('.input[name="role"]').value;
-  if (username && role) {
-    var isSwitchUser = bookmarkInfo.user.username!=username;
-    bookmarkInfo.user = {
-      username: username,
-      role: role
-    };
-    domList.pdf.container.dataset.role = role; // for differentiated styling
-    isSwitchUser && showMsg(`Current User: ${username} set`);
-    getBookmarkedList(null, username).then((bookmarkArray) => {
-      // console.log(bookmarkArray);
-      // clear existing bookmarks
-      var existingBookedPages = domList.pdf.container.querySelectorAll('canvasWrapper.booked');
-      Object.keys(existingBookedPages).forEach((pageIndex) => {
-        existingBookedPages[pageIndex].classList.remove('booked');
-      });
-      // update bookmarks
-      bookmarkArray.forEach((bookmarkIndex) => {
-        domList.pdf.container.querySelector(`[data-page-num="${bookmarkIndex}"]`).classList.add('booked')
-      })
-    })
-  }
-}
-
-var updateDivBookmark = (pageNum, bookmarkDiv, pageBookmarks) => {
-  var studentCnt = pageBookmarks.student?pageBookmarks.student[pageNum]:null
-    , profCnt = pageBookmarks.prof?pageBookmarks.prof[pageNum]:null;
-  if (profCnt) {
-    bookmarkDiv.dataset.profCnt = profCnt;
-  } else {
-    delete bookmarkDiv.dataset.profCnt;
-  }
-  if (studentCnt) {
-    bookmarkDiv.dataset.studentCnt = studentCnt;
-  } else {
-    delete bookmarkDiv.dataset.studentCnt;
-  }
-}
-
-var updateThumbnailBookmarks = (allBookmarks) => {
-  bookmarkInfo.db.bookmarkedPages = allBookmarks;
-  var canvasWrapperList = domList.thumbnail.container.querySelectorAll(`.canvasWrapper`);
-  Object.keys(canvasWrapperList).forEach((elementKey, pageIndex) => {
-    var cntDiv = canvasWrapperList[pageIndex].querySelector('.bookmark-count');
-    updateDivBookmark(pageIndex+1, cntDiv, allBookmarks);
-  })
-}
-
-var togglePageBookmark = (pageIndex) => {
-  if (!bookmarkInfo.user.username) {
-    showMsg("Set a user first");
-    return;
-  }
-  pdfInfo.currentPDF = domList.pdf.title.textContent;
-  bookmarkInfo.user.bookmarkPage = pageIndex;
-
-  xhttp.open('post', '/api/setbookmark', true);
-  xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-  xhttp.onreadystatechange = () => {
-    if (xhttp.readyState == 4 && xhttp.status == 200) {
-      if (xhttp.responseText == "booked") {
-        showMsg(`Page ${pageIndex} bookmarked`);
-        domList.pdf.container.getElementsByClassName('canvasWrapper')[pageIndex-1].classList.add('booked');
-      } else if (xhttp.responseText == "unbooked") {
-        showMsg(`Page ${pageIndex} bookmark removed`);
-        domList.pdf.container.getElementsByClassName('canvasWrapper')[pageIndex-1].classList.remove('booked');
-      }
-      getBookmarkedList().then(updateThumbnailBookmarks);
-    }
-  }
-  xhttp.send(JSON.stringify({
-    username: bookmarkInfo.user.username,
-    role: bookmarkInfo.user.role,
-    pdf: domList.pdf.title.textContent,
-    pageNumber: pageIndex
-  }));
-}
-
-var getBookmarkedList = (filename, username) => {
+// ====================================
+// BOOKMARKS ==========================
+// ====================================
+ctrl.bookmark.getList = (filename, username) => {
   // no filename, auto set the current one
   // no username, get all bookmarks
   filename = filename?filename:pdfInfo.currentPDF;
@@ -284,12 +305,27 @@ var getBookmarkedList = (filename, username) => {
   }); //end:: promise
 }
 
+ctrl.bookmark.updateDiv = (pageNum, bookmarkDiv, pageBookmarks) => {
+  var studentCnt = pageBookmarks.student?pageBookmarks.student[pageNum]:null
+    , profCnt = pageBookmarks.prof?pageBookmarks.prof[pageNum]:null;
+  if (profCnt) {
+    bookmarkDiv.dataset.profCnt = profCnt;
+  } else {
+    delete bookmarkDiv.dataset.profCnt;
+  }
+  if (studentCnt) {
+    bookmarkDiv.dataset.studentCnt = studentCnt;
+  } else {
+    delete bookmarkDiv.dataset.studentCnt;
+  }
+}
 
-/**
- * -------------------
- * LISTENER ----------
- * -------------------
- */
+
+//  _    ___ ___ _____ ___ _  _ ___ ___
+// | |  |_ _/ __|_   _| __| \| | __| _ \
+// | |__ | |\__ \ | | | _|| .` | _||   /
+// |____|___|___/ |_| |___|_|\_|___|_|_\
+//
 domList.pdf.container.onscroll = (evt) => {
   domList.thumbnail.container.scrollTop = evt.srcElement.scrollTop*config.thumbnail.scale;
 }

@@ -32,14 +32,14 @@
         <option selected value='student'>Student</option>
         <option value='prof'>Professor</option>
       </select>
-      <button type="button" name="setUserBtn" onclick='setUser();'>Set User</button>
+      <button type="button" name="setUserBtn" onclick='ctrl.user.set();'>Set User</button>
     </div>
 
     <div id="msg"></div>
 
     <!-- TEMPLATES -->
     <template id="file-template">
-      <div class="fileItem" data-file onclick='selectPDF(this);'>
+      <div class="fileItem" data-file onclick='ctrl.pdf.select(this);'>
         <img src="" alt="" />
         <div class="fileinfo">
           <h2 class='filename'></h2>
