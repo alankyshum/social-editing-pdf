@@ -20,9 +20,11 @@ $navbarHeight: 40px;
 // GLOBAL
 // -------------
 * {
+  margin: 0;
+}
+body {
   font-family: "Helvetica CE 35", "Segoe UI Light", "Arial Nova Thin", "Century Gothic Thin", Sans-serif;
   color: $medGrey;
-  margin: 0;
 }
 
 
@@ -50,8 +52,16 @@ $navbarHeight: 40px;
   padding: 7px 0 0 12px;
   box-sizing: border-box;
   background-color: $themeColour;
-  color: white;
   border-bottom: 2px solid darken($themeColour, 40%);
+  color: white;
+  .file-name {
+    color: white;
+  }
+  .currentViewer {
+    float: right;
+    padding-right: 20px;
+    color: white;
+  }
 }
 .canvasWrapper {
   position: relative;
@@ -167,6 +177,12 @@ $fileItemMargin: 5px;
     }
 
   } // end:: canvasWrapper
+  #pdf-container:not([data-role]) {
+    // not yet logged in
+    .canvasWrapper .bookmarkBtn {
+      display: none;
+    }
+  }
   #pdf-container[data-role="student"] {
     .canvasWrapper.booked .bookmarkBtn, .canvasWrapper .bookmarkBtn:hover {
       .fa {

@@ -9,9 +9,11 @@
  * --------------
  */
 * {
-  font-family: "Helvetica CE 35", "Segoe UI Light", "Arial Nova Thin", "Century Gothic Thin", Sans-serif;
-  color: #545454;
   margin: 0; }
+
+body {
+  font-family: "Helvetica CE 35", "Segoe UI Light", "Arial Nova Thin", "Century Gothic Thin", Sans-serif;
+  color: #545454; }
 
 #container {
   display: -webkit-flex;
@@ -34,8 +36,14 @@
   padding: 7px 0 0 12px;
   box-sizing: border-box;
   background-color: #3c98ca;
-  color: white;
-  border-bottom: 2px solid #0c222e; }
+  border-bottom: 2px solid #0c222e;
+  color: white; }
+  .file-header .file-name {
+    color: white; }
+  .file-header .currentViewer {
+    float: right;
+    padding-right: 20px;
+    color: white; }
 
 .canvasWrapper {
   position: relative; }
@@ -134,6 +142,8 @@
         text-shadow: 0px 0px 5px white, 0px 0px 10px white; }
     #pdf-viewer .canvasWrapper canvas:hover + .bookmarkBtn {
       opacity: .8; }
+  #pdf-viewer #pdf-container:not([data-role]) .canvasWrapper .bookmarkBtn {
+    display: none; }
   #pdf-viewer #pdf-container[data-role="student"] .canvasWrapper.booked .bookmarkBtn .fa, #pdf-viewer #pdf-container[data-role="student"] .canvasWrapper .bookmarkBtn:hover .fa {
     color: #b70000; }
   #pdf-viewer #pdf-container[data-role="prof"] .canvasWrapper.booked .bookmarkBtn .fa, #pdf-viewer #pdf-container[data-role="prof"] .canvasWrapper .bookmarkBtn:hover .fa {

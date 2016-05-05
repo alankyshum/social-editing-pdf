@@ -3,7 +3,6 @@
 //  \ V / _ \|   /| | / _ \| _ \ |__| _|\__ \
 //   \_/_/ \_\_|_\___/_/ \_\___/____|___|___/
 //
-var xhttp = new XMLHttpRequest();
 var domList = {
   file: {
     container: document.getElementById('file-container'),
@@ -15,7 +14,8 @@ var domList = {
   },
   pdf: {
     container: document.getElementById('pdf-container'),
-    title: document.querySelector('#pdf-viewer .file-header')
+    title: document.querySelector('#pdf-viewer .file-name'),
+    currentViewer: document.querySelector('#pdf-viewer .currentViewer')
   },
   demoPanel: {
     container: document.getElementById('demoPanel')
@@ -32,7 +32,7 @@ var config = {
     scale: 0.2
   }
 }
-var bookmarkInfo = {
+var pageDB = {
   user: {
     username: null, // identified for the current user
     role: null, // students, or professor
@@ -40,11 +40,11 @@ var bookmarkInfo = {
   },
   db: {
     bookmarkedPages: {} // for current PDF file
+  },
+  pdf: {
+    numPages: 0,
+    currentPDF: ""
   }
-}
-var pdfInfo = {
-  numPages: 0,
-  currentPDF: ""
 }
 var ctrl = {
   helper: {},
@@ -95,59 +95,97 @@ ctrl.helper.showMsg = (msg) => {
 ctrl.helper.JSONtoURL = (json) => {
   return JSON.stringify(json).replace(/[{|}|"]/g, '').split(/:|,/).map((part, i) => {return i%2?"="+encodeURIComponent(part):encodeURIComponent(part);}).join('&').replace(/&=/g, '=');
 }
+ctrl.helper.setCookie = (cname, cvalue, exdays) => {
+  var d = new Date();
+  d.setTime(d.getTime() + ((exdays?exdays:30)*24*60*60*1000));
+  var expires = "expires="+ d.toUTCString();
+  document.cookie = cname + "=" + JSON.stringify(cvalue) + "; " + expires;
+}
+ctrl.helper.getCookie = (cname) => {
+  var name = cname + "=";
+  var ca = document.cookie.split(';');
+  for(var i = 0; i <ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0)==' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return JSON.parse(c.substring(name.length,c.length));
+    }
+  }
+  return null;
+}
 
 // ====================================
 // EXPLORER ===========================
 // ====================================
 // POPULATE FILE EXPLORER
 ctrl.explorer.update = () => {
-  xhttp.open('get', '/api/filelist', true);
-  xhttp.onreadystatechange = () => {
-    if (xhttp.readyState == 4 && xhttp.status == 200) {
-      var fileList = JSON.parse(xhttp.responseText);
-      fileList.forEach((file) => {
-        var fileItem = domList.file.template.content.cloneNode(true);
-        fileItem.querySelector('.filename').textContent = file.filename;
-        fileItem.querySelector('img').src = "/file/"+file.thumbnail;
-        domList.file.container.appendChild(fileItem);
-        domList.file.container.lastElementChild.dataset.file = file.filename;
-      })
-      // load PDF
-      ctrl.pdf.select(domList.file.container.children[0]);
+  return new Promise((resolve, reject) => {
+    var xhttp = new XMLHttpRequest();
+    xhttp.open('get', '/api/filelist', true);
+    xhttp.onreadystatechange = () => {
+      if (xhttp.readyState == 4 && xhttp.status == 200) {
+        var fileList = JSON.parse(xhttp.responseText);
+        fileList.forEach((file) => {
+          var fileItem = domList.file.template.content.cloneNode(true);
+          fileItem.querySelector('.filename').textContent = file.filename;
+          fileItem.querySelector('img').src = "/file/"+file.thumbnail;
+          domList.file.container.appendChild(fileItem);
+          domList.file.container.lastElementChild.dataset.file = file.filename;
+        })
+        // load PDF
+        ctrl.pdf.select(domList.file.container.children[0])
+        .then(() => {
+          resolve();
+        })
+      }
     }
-  }
-  xhttp.send();
+    xhttp.send();
+  })
 }
-ctrl.explorer.update();
 
 
 // ====================================
-// USES ===============================
+// USERS ==============================
 // ====================================
-ctrl.user.set = () => {
-  var username = domList.demoPanel.container.querySelector('.input[name="username"]').value
-    , role = domList.demoPanel.container.querySelector('.input[name="role"]').value;
-  if (username && role) {
-    var isSwitchUser = bookmarkInfo.user.username!=username;
-    bookmarkInfo.user = {
+ctrl.user.set = (autoLogin) => {
+  var username = "", role = "";
+  if (autoLogin && ctrl.helper.getCookie('currentUser')) {
+    // data from cookie
+    username = ctrl.helper.getCookie('currentUser').username;
+    role = ctrl.helper.getCookie('currentUser').role;
+  } else {
+    // data from DOM
+    username = domList.demoPanel.container.querySelector('.input[name="username"]').value;
+    role = domList.demoPanel.container.querySelector('.input[name="role"]').value;
+  }
+
+  // USER INFO UPDATE + DISPLAY
+  if (username.length && role.length && pageDB.user.username != username) {
+    // no empry data
+    pageDB.user = {
       username: username,
       role: role
-    };
+    }
+    ctrl.helper.showMsg(`Current User: ${username} set`);
+    ctrl.helper.setCookie("currentUser", pageDB.user);
+    domList.pdf.currentViewer.innerHTML = `<i class='fa fa-user'></i> ${username} (${role})`;
     domList.pdf.container.dataset.role = role; // for differentiated styling
-    isSwitchUser && ctrl.helper.showMsg(`Current User: ${username} set`);
-    ctrl.bookmark.getList(null, username).then((bookmarkArray) => {
-      // console.log(bookmarkArray);
-      // clear existing bookmarks
-      var existingBookedPages = domList.pdf.container.querySelectorAll('canvasWrapper.booked');
-      Object.keys(existingBookedPages).forEach((pageIndex) => {
-        existingBookedPages[pageIndex].classList.remove('booked');
-      });
-      // update bookmarks
-      bookmarkArray.forEach((bookmarkIndex) => {
-        domList.pdf.container.querySelector(`[data-page-num="${bookmarkIndex}"]`).classList.add('booked')
-      })
-    })
   }
+
+  // LOAD BOOKMARKS
+  ctrl.bookmark.getList(null, username).then((bookmarkArray) => {
+    // clear existing bookmarks
+    var existingBookedPages = domList.pdf.container.querySelectorAll('canvasWrapper.booked');
+    Object.keys(existingBookedPages).forEach((pageIndex) => {
+      existingBookedPages[pageIndex].classList.remove('booked');
+    });
+    // update bookmarks
+    bookmarkArray.forEach((bookmarkIndex) => {
+      domList.pdf.container.querySelector(`[data-page-num="${bookmarkIndex}"]`).classList.add('booked')
+    })
+  })
 }
 
 
@@ -155,7 +193,7 @@ ctrl.user.set = () => {
 // THUMBNAILS =========================
 // ====================================
 ctrl.thumbnail.updateBookmarks = (allBookmarks) => {
-  bookmarkInfo.db.bookmarkedPages = allBookmarks;
+  pageDB.db.bookmarkedPages = allBookmarks;
   var canvasWrapperList = domList.thumbnail.container.querySelectorAll(`.canvasWrapper`);
   Object.keys(canvasWrapperList).forEach((elementKey, pageIndex) => {
     var cntDiv = canvasWrapperList[pageIndex].querySelector('.bookmark-count');
@@ -172,24 +210,27 @@ ctrl.pdf.select = (e) => {
   var _activeItems = document.querySelector('#file-explorer .fileItem.active');
   _activeItems && _activeItems.classList.toggle('active');
   e.classList.toggle('active');
-  pdfInfo.currentPDF = e.dataset.file;
+  pageDB.pdf.currentPDF = e.dataset.file;
   domList.pdf.title.textContent = e.dataset.file;
   domList.thumbnail.container.innerHTML = "";
-  ctrl.bookmark.getList().then((bookmarkList) => {
-    bookmarkInfo.db.bookmarkedPages = bookmarkList;
-    ctrl.pdf.render("file/"+e.dataset.file, domList.pdf.container, {scale: 1, isThumbnail: false});
-    ctrl.pdf.render("file/"+e.dataset.file, domList.thumbnail.container, {scale: config.thumbnail.scale, isThumbnail: true});
+  return ctrl.bookmark.getList().then((bookmarkList) => {
+    pageDB.db.bookmarkedPages = bookmarkList;
+    return Promise.all([
+      ctrl.pdf.render("file/"+e.dataset.file, domList.pdf.container, {scale: 1, isThumbnail: false}),
+      ctrl.pdf.render("file/"+e.dataset.file, domList.thumbnail.container, {scale: config.thumbnail.scale, isThumbnail: true})
+    ])
   })
 }
 
 ctrl.pdf.toggleBookmark = (pageIndex) => {
-  if (!bookmarkInfo.user.username) {
+  if (!pageDB.user.username) {
     ctrl.helper.showMsg("Set a user first");
     return;
   }
-  pdfInfo.currentPDF = domList.pdf.title.textContent;
-  bookmarkInfo.user.bookmarkPage = pageIndex;
+  pageDB.pdf.currentPDF = domList.pdf.title.textContent;
+  pageDB.user.bookmarkPage = pageIndex;
 
+  var xhttp = new XMLHttpRequest();
   xhttp.open('post', '/api/setbookmark', true);
   xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
   xhttp.onreadystatechange = () => {
@@ -205,8 +246,8 @@ ctrl.pdf.toggleBookmark = (pageIndex) => {
     }
   }
   xhttp.send(JSON.stringify({
-    username: bookmarkInfo.user.username,
-    role: bookmarkInfo.user.role,
+    username: pageDB.user.username,
+    role: pageDB.user.role,
     pdf: domList.pdf.title.textContent,
     pageNumber: pageIndex
   }));
@@ -237,7 +278,7 @@ ctrl.pdf.render = (url, canvasContainer, options) => {
       canvasWrapper.appendChild(canvas);
 
       var bookmarkDiv = document.createElement('div');
-      ctrl.bookmark.updateDiv(page.pageIndex+1, bookmarkDiv, bookmarkInfo.db.bookmarkedPages);
+      ctrl.bookmark.updateDiv(page.pageIndex+1, bookmarkDiv, pageDB.db.bookmarkedPages);
       bookmarkDiv.classList.add('bookmark-count');
       canvasWrapper.appendChild(bookmarkDiv);
     } else {
@@ -253,22 +294,24 @@ ctrl.pdf.render = (url, canvasContainer, options) => {
 
   // RENDER ALL PAGES
   var renderPages = (pdfDoc) => {
-    pdfInfo.numPages = pdfDoc.numPages;
-    canvasContainer.innerHTML = "";
-    for(var num = 1; num <= pdfDoc.numPages; num++) {
-      var _canvasDiv = document.createElement('div');
-      _canvasDiv.classList.add('canvasWrapper');
-      _canvasDiv.dataset.pageNum = num;
-      canvasContainer.appendChild(_canvasDiv);
-
-      pdfDoc.getPage(num).then((page) => {
-        renderPage(page, canvasContainer.querySelector(`[data-page-num="${page.pageIndex+1}"]`))
-      })
-    }
+    return new Promise((resolve, reject) => {
+      pageDB.pdf.numPages = pdfDoc.numPages;
+      canvasContainer.innerHTML = "";
+      for(var num = 1; num <= pdfDoc.numPages; num++) {
+        var _canvasDiv = document.createElement('div');
+        _canvasDiv.classList.add('canvasWrapper');
+        _canvasDiv.dataset.pageNum = num;
+        canvasContainer.appendChild(_canvasDiv);
+        if (num == pdfDoc.numPages) resolve();
+        pdfDoc.getPage(num).then((page) => {
+          renderPage(page, canvasContainer.querySelector(`[data-page-num="${page.pageIndex+1}"]`))
+        })
+      }
+    }) // end:: promise
   }
 
   // PDFJS.disableWorker = true;
-  PDFJS.getDocument(url).then(renderPages);
+  return PDFJS.getDocument(url).then(renderPages);
 }
 
 
@@ -278,8 +321,9 @@ ctrl.pdf.render = (url, canvasContainer, options) => {
 ctrl.bookmark.getList = (filename, username) => {
   // no filename, auto set the current one
   // no username, get all bookmarks
-  filename = filename?filename:pdfInfo.currentPDF;
+  filename = filename?filename:pageDB.pdf.currentPDF;
   return new Promise((resolve, reject) => {
+    var xhttp = new XMLHttpRequest();
     xhttp.open('post', '/api/getbookmarks', true);
     xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     xhttp.onreadystatechange = () => {
@@ -329,3 +373,14 @@ ctrl.bookmark.updateDiv = (pageNum, bookmarkDiv, pageBookmarks) => {
 domList.pdf.container.onscroll = (evt) => {
   domList.thumbnail.container.scrollTop = evt.srcElement.scrollTop*config.thumbnail.scale;
 }
+
+
+ //    _  _   _ _____ ___  ___ _   _ _  _
+ //   /_\| | | |_   _/ _ \| _ \ | | | \| |
+ //  / _ \ |_| | | || (_) |   / |_| | .` |
+ // /_/ \_\___/  |_| \___/|_|_\\___/|_|\_|
+ //
+ctrl.explorer.update().then(() => {
+  // AUTO LOGIN
+  ctrl.user.set(true);
+})

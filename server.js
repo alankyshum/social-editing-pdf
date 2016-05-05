@@ -110,6 +110,7 @@ app.get('/api/filelist', (req, res) => {
       thumbnail: filename.match(/(.+).pdf$/i)[1]+".png"
     }
   })
+  res.setRequestHeader('Content-Type', 'Application/JSON')
   res.send(fileList);
 });
 
