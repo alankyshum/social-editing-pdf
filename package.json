@@ -22,6 +22,7 @@
   "homepage": "https://github.com/alankyshum/social-editing-pdf#readme",
   "dependencies": {
     "body-parser": "^1.15.0",
+    "colors": "^1.1.2",
     "express": "^4.13.4",
     "lowdb": "^0.12.5",
     "path": "^0.12.7",
