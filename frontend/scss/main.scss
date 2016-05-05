@@ -129,6 +129,7 @@ $fileItemMargin: 5px;
     &[data-prof-cnt]:before {
       content: attr(data-prof-cnt);
       background-color: #E6B810;
+      top: 30px;
     }
     &[data-student-cnt]:after {
       content: attr(data-student-cnt);

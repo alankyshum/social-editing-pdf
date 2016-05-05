@@ -37,7 +37,7 @@ var bookmarkInfo = {
     bookmarkPage: null // page to be submitted to server
   },
   db: {
-    bookmarkedPages: [] // for current PDF file
+    bookmarkedPages: {} // for current PDF file
   }
 }
 var pdfInfo = {
@@ -178,7 +178,7 @@ var setUser = () => {
   var username = domList.demoPanel.container.querySelector('.input[name="username"]').value
     , role = domList.demoPanel.container.querySelector('.input[name="role"]').value;
   if (username && role) {
-    var isSwitchUser = bookmarkInfo.user==username;
+    var isSwitchUser = bookmarkInfo.user.username!=username;
     bookmarkInfo.user = {
       username: username,
       role: role
@@ -197,6 +197,30 @@ var setUser = () => {
       })
     })
   }
+}
+
+var updateDivBookmark = (pageNum, bookmarkDiv, pageBookmarks) => {
+  var studentCnt = pageBookmarks.student?pageBookmarks.student[pageNum]:null
+    , profCnt = pageBookmarks.prof?pageBookmarks.prof[pageNum]:null;
+  if (profCnt) {
+    bookmarkDiv.dataset.profCnt = profCnt;
+  } else {
+    delete bookmarkDiv.dataset.profCnt;
+  }
+  if (studentCnt) {
+    bookmarkDiv.dataset.studentCnt = studentCnt;
+  } else {
+    delete bookmarkDiv.dataset.studentCnt;
+  }
+}
+
+var updateThumbnailBookmarks = (allBookmarks) => {
+  bookmarkInfo.db.bookmarkedPages = allBookmarks;
+  var canvasWrapperList = domList.thumbnail.container.querySelectorAll(`.canvasWrapper`);
+  Object.keys(canvasWrapperList).forEach((elementKey, pageIndex) => {
+    var cntDiv = canvasWrapperList[pageIndex].querySelector('.bookmark-count');
+    updateDivBookmark(pageIndex+1, cntDiv, allBookmarks);
+  })
 }
 
 var togglePageBookmark = (pageIndex) => {
@@ -218,8 +242,7 @@ var togglePageBookmark = (pageIndex) => {
         showMsg(`Page ${pageIndex} bookmark removed`);
         domList.pdf.container.getElementsByClassName('canvasWrapper')[pageIndex-1].classList.remove('booked');
       }
-      // TODO: update global bookmark list
-
+      getBookmarkedList().then(updateThumbnailBookmarks);
     }
   }
   xhttp.send(JSON.stringify({
@@ -231,6 +254,8 @@ var togglePageBookmark = (pageIndex) => {
 }
 
 var getBookmarkedList = (filename, username) => {
+  // no filename, auto set the current one
+  // no username, get all bookmarks
   filename = filename?filename:pdfInfo.currentPDF;
   return new Promise((resolve, reject) => {
     xhttp.open('post', '/api/getbookmarks', true);

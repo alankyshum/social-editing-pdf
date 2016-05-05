@@ -103,7 +103,8 @@
       right: 10px; }
     #thumbnails .bookmark-count[data-prof-cnt]:before {
       content: attr(data-prof-cnt);
-      background-color: #E6B810; }
+      background-color: #E6B810;
+      top: 30px; }
     #thumbnails .bookmark-count[data-student-cnt]:after {
       content: attr(data-student-cnt);
       background-color: #AD1313; }

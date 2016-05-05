@@ -40,9 +40,11 @@
       "role": "student",
       "bookmark": {
         "04_Humanability.pdf": [
-          3,
+          5,
+          8,
           1,
-          2
+          2,
+          3
         ],
         "08_Auditory_Haptic_Interaction.pdf": [
           2
