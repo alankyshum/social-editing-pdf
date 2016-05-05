@@ -42,12 +42,16 @@
         "04_Humanability.pdf": [
           8,
           6,
-          7
+          3,
+          2
         ],
         "08_Auditory_Haptic_Interaction.pdf": [
           2
         ],
-        "07_Visual_Interaction.pdf": []
+        "07_Visual_Interaction.pdf": [],
+        "18_Crowd_Computing.pdf": [
+          2
+        ]
       }
     },
     {
@@ -58,7 +62,7 @@
           2
         ],
         "04_Humanability.pdf": [
-          4
+          7
         ]
       }
     },

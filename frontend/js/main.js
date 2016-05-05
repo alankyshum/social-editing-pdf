@@ -185,6 +185,7 @@ ctrl.thumbnail.updateBookmarks = (allBookmarks) => {
   var canvasWrapperList = domList.thumbnail.container.querySelectorAll(`.canvasWrapper`);
   Object.keys(canvasWrapperList).forEach((elementKey, pageIndex) => {
     var cntDiv = canvasWrapperList[pageIndex].querySelector('.bookmark-count');
+    // console.log(cntDiv);
     ctrl.bookmark.updateDiv(pageIndex+1, cntDiv, allBookmarks);
   })
 }
@@ -350,7 +351,7 @@ ctrl.bookmark.getList = (filename, username, role) => {
 ctrl.bookmark.updateDisplayOnPDF = (username, role) => {
   ctrl.bookmark.getList(null, username, role).then((bookmarkArray) => {
     // clear existing bookmarks
-    var existingBookedPages = domList.pdf.container.querySelectorAll('canvasWrapper.booked');
+    var existingBookedPages = domList.pdf.container.querySelectorAll('.canvasWrapper.booked');
     Object.keys(existingBookedPages).forEach((pageIndex) => {
       existingBookedPages[pageIndex].classList.remove('booked');
     });
@@ -362,17 +363,19 @@ ctrl.bookmark.updateDisplayOnPDF = (username, role) => {
 }
 
 ctrl.bookmark.updateDiv = (pageNum, bookmarkDiv, pageBookmarks) => {
-  var studentCnt = pageBookmarks.student?pageBookmarks.student[pageNum]:null
+  if (bookmarkDiv) {
+    var studentCnt = pageBookmarks.student?pageBookmarks.student[pageNum]:null
     , profCnt = pageBookmarks.prof?pageBookmarks.prof[pageNum]:null;
-  if (profCnt) {
-    bookmarkDiv.dataset.profCnt = profCnt;
-  } else {
-    delete bookmarkDiv.dataset.profCnt;
-  }
-  if (studentCnt) {
-    bookmarkDiv.dataset.studentCnt = studentCnt;
-  } else {
-    delete bookmarkDiv.dataset.studentCnt;
+    if (profCnt) {
+      bookmarkDiv.dataset.profCnt = profCnt;
+    } else {
+      delete bookmarkDiv.dataset.profCnt;
+    }
+    if (studentCnt) {
+      bookmarkDiv.dataset.studentCnt = studentCnt;
+    } else {
+      delete bookmarkDiv.dataset.studentCnt;
+    }
   }
 }
 
@@ -399,8 +402,21 @@ ctrl.explorer.update().then(() => {
   ctrl.bookmark.updateDisplayOnPDF(pageDB.user.username, pageDB.user.role);
   // SOCKET LISTENER, FOR INSTANT BOOKMARK UPDATE
   socket.emit('pageInfo.filename', pageDB.pdf.currentPDF);
-  socket.on('db.bookmark.updated', (data) => {
+  socket.on('db.bookmark.updated', () => {
     // when others updated bookmark
-    ctrl.thumbnail.updateBookmarks(data.bookmarkList);
+    ctrl.bookmark.getList().then(ctrl.thumbnail.updateBookmarks);
   });
 })
+
+
+
+ //  ___ _   _ _____ _____ ___  _  _     _   ___ _____ ___ ___  _  _
+ // | _ ) | | |_   _|_   _/ _ \| \| |   /_\ / __|_   _|_ _/ _ \| \| |
+ // | _ \ |_| | | |   | || (_) | .` |  / _ \ (__  | |  | | (_) | .` |
+ // |___/\___/  |_|   |_| \___/|_|\_| /_/ \_\___| |_| |___\___/|_|\_|
+ //
+var btn = {};
+btn.setUser = () => {
+  ctrl.user.set();
+  ctrl.bookmark.updateDisplayOnPDF(pageDB.user.username, pageDB.user.role);
+}

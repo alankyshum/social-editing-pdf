@@ -227,9 +227,7 @@ io.on('connection', function(socket){
 
   // WATCHERS HERE
   fs.watch(path.join(__dirname, 'db.json'), (evt, filename) => {
-    socket.emit('db.bookmark.updated', {
-      bookmarkList: getAllBookmarks(pageInfo.filename)
-    });
+    socket.emit('db.bookmark.updated');
   });
 });
 
