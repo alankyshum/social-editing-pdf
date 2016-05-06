@@ -43,12 +43,14 @@
           8,
           6,
           3,
-          2
+          1
         ],
         "08_Auditory_Haptic_Interaction.pdf": [
           2
         ],
-        "07_Visual_Interaction.pdf": [],
+        "07_Visual_Interaction.pdf": [
+          1
+        ],
         "18_Crowd_Computing.pdf": [
           2
         ]
@@ -62,7 +64,11 @@
           2
         ],
         "04_Humanability.pdf": [
-          7
+          7,
+          4
+        ],
+        "07_Visual_Interaction.pdf": [
+          1
         ]
       }
     },
@@ -86,6 +92,52 @@
         ],
         "08_Auditory_Haptic_Interaction.pdf": [
           2
+        ]
+      }
+    },
+    {
+      "username": "peter",
+      "role": "prof",
+      "bookmark": {
+        "04_Humanability.pdf": [
+          4
+        ]
+      }
+    },
+    {
+      "username": "peter",
+      "role": "student",
+      "bookmark": {
+        "04_Humanability.pdf": [
+          4
+        ]
+      }
+    },
+    {
+      "username": "Charlie",
+      "role": "student",
+      "bookmark": {
+        "04_Humanability.pdf": [
+          4
+        ]
+      }
+    },
+    {
+      "username": "david",
+      "role": "student",
+      "bookmark": {
+        "04_Humanability.pdf": [
+          4
+        ],
+        "07_Visual_Interaction.pdf": [
+          1,
+          13,
+          2
+        ],
+        "demo.pdf": [],
+        "18_Crowd_Computing.pdf": [],
+        "15_Assetsistive_Technology.pdf": [
+          22
         ]
       }
     }
