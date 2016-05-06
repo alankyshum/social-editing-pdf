@@ -187,7 +187,7 @@ app.post('/api/setbookmark', (req, res) => {
     })
     msg = "booked";
   }
-  res.sendStatus(msg);
+  res.send(msg);
 });
 
 app.post('/api/getbookmarks', (req, res) => {
