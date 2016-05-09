@@ -41,6 +41,9 @@ body {
     overflow: auto;
     height: calc(100vh - #{$navbarHeight});
   }
+  #file-container {
+    border-right: 3px solid black;
+  }
 }
 
 // --------------
@@ -54,6 +57,9 @@ body {
   background-color: $themeColour;
   border-bottom: 2px solid darken($themeColour, 40%);
   color: white;
+  span {
+    vertical-align: sub;
+  }
   .file-name {
     color: white;
   }
@@ -278,4 +284,28 @@ $fileItemMargin: 5px;
     bottom: -30px;
     opacity: 0;
   }
+}
+
+
+// USER COUNT
+div#onlineUserCount {
+    position: fixed;
+    top: 45px;
+    right: 10px;
+    width: 90px;
+    height: 10px;
+    background-color: white;
+    padding: 10px 20px;
+    border-radius: 3px;
+    opacity: .7;
+    text-align: right;
+    transition: opacity .3s;
+    &:before {
+      content: "Online Users: ";
+      position: absolute;
+      display: block;
+    }
+    &:hover {
+      opacity: 1;
+    }
 }

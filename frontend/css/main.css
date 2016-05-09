@@ -30,6 +30,8 @@ body {
   #container #file-container, #container #pdf-container, #container #thumbnails-container {
     overflow: auto;
     height: calc(100vh - 40px); }
+  #container #file-container {
+    border-right: 3px solid black; }
 
 .file-header {
   height: 40px;
@@ -38,6 +40,8 @@ body {
   background-color: #3c98ca;
   border-bottom: 2px solid #0c222e;
   color: white; }
+  .file-header span {
+    vertical-align: sub; }
   .file-header .file-name {
     color: white; }
   .file-header .currentViewer {
@@ -234,3 +238,22 @@ body {
   100% {
     bottom: -30px;
     opacity: 0; } }
+
+div#onlineUserCount {
+  position: fixed;
+  top: 45px;
+  right: 10px;
+  width: 90px;
+  height: 10px;
+  background-color: white;
+  padding: 10px 20px;
+  border-radius: 3px;
+  opacity: .7;
+  text-align: right;
+  transition: opacity .3s; }
+  div#onlineUserCount:before {
+    content: "Online Users: ";
+    position: absolute;
+    display: block; }
+  div#onlineUserCount:hover {
+    opacity: 1; }

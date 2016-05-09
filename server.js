@@ -214,12 +214,17 @@ app.post('/api/getbookmarks', (req, res) => {
  //  \ \/\/ / _ \| || (__| __ | _||   /
  //   \_/\_/_/ \_\_| \___|_||_|___|_|_\
  //
+var onlineUsersCnt = 0;
 io.on('connection', function(socket){
   console.log('[SOCKET] a user connected');
-
+  onlineUsersCnt++;
+  socket.emit('users.count', onlineUsersCnt);
   socket.on('disconnect', function(){
     console.log('user disconnected');
+    onlineUsersCnt--;
+    socket.emit('users.count', onlineUsersCnt);
   });
+
   socket.on('pageInfo.filename', (filename) => {
     console.log(`SERVING: ${filename}`);
     pageInfo.filename = filename;

@@ -25,7 +25,8 @@ var domList = {
   },
   bookmarkBtn: {
     template: document.getElementById('bookmarkBtn-template')
-  }
+  },
+  userCountDiv: document.getElementById('onlineUserCount')
 }
 var config = {
   thumbnail: {
@@ -379,6 +380,15 @@ ctrl.bookmark.updateDiv = (pageNum, bookmarkDiv, pageBookmarks) => {
   }
 }
 
+// =======================
+// USER INTERFACE RELATED
+// =======================
+var ui = {};
+ui.userCountUpdate = (cnt) => {
+  console.log(cnt);
+  domList.userCountDiv.textContent = cnt;
+}
+
 
 //  _    ___ ___ _____ ___ _  _ ___ ___
 // | |  |_ _/ __|_   _| __| \| | __| _ \
@@ -402,6 +412,7 @@ ctrl.explorer.update().then(() => {
   ctrl.bookmark.updateDisplayOnPDF(pageDB.user.username, pageDB.user.role);
   // SOCKET LISTENER, FOR INSTANT BOOKMARK UPDATE
   socket.emit('pageInfo.filename', pageDB.pdf.currentPDF);
+  socket.on('users.count', ui.userCountUpdate);
   socket.on('db.bookmark.updated', () => {
     // when others updated bookmark
     ctrl.bookmark.getList().then(ctrl.thumbnail.updateBookmarks);
