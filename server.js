@@ -235,7 +235,7 @@ io.on('connection', function(socket){
 app.all('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
-var port = process.env.PORT || '3030';
-server.listen(process.env.PORT || '3030', () => {
+var port = process.env.PORT || '8080';
+server.listen(port, () => {
   console.log(`Server Listening at port ${port}`);
 });
